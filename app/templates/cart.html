@@ -12,7 +12,7 @@
   <ul class="cart-lines">
     {% for line in lines %}
     <li>
-      <div class="photo photo-small" aria-hidden="true">photo</div>
+      <div class="photo photo-small photo-{{ line.id }}" aria-hidden="true">photo</div>
       <div>
         <h2>{{ line.name }}</h2>
         <p>{{ line.price_cents | price }} each</p>

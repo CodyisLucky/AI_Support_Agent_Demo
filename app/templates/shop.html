@@ -9,12 +9,12 @@
   <p class="lede">Add products and appointments to your cart and review them before checkout. You can buy as a guest or sign in. Purchases stay on this machine.</p>
 </section>
 {% for section in sections %}
-<section class="shelf" aria-labelledby="section-{{ loop.index }}">
+<section class="shelf shelf-{{ section.entries[0].kind }}" aria-labelledby="section-{{ loop.index }}">
   <h2 id="section-{{ loop.index }}">{{ section.title }}</h2>
   <div class="catalog">
     {% for item in section.entries %}
     <article class="card">
-      <div class="photo" aria-hidden="true">photo</div>
+      <div class="photo photo-{{ item.id }}" aria-hidden="true">photo</div>
       <h3>{{ item.name }}</h3>
       <p>{{ item.summary }}</p>
       <p class="price">{{ item.price_cents | price }}</p>
