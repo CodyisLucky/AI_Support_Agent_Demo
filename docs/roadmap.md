@@ -8,7 +8,7 @@ The support model and retrieval approach are deferred to step 6. Product docs an
 
 FastAPI app serving plain HTML.
 
-- Shop, sign-in, create-account, account, cart, and checkout pages are done. The catalog has 25 skincare, makeup, and service items. Cards use a square labeled “photo” instead of an image.
+- Shop, sign-in, create-account, account, cart, and checkout pages are done. The catalog has 25 skincare, makeup, and service items. Cards use a flat color swatch instead of a photo. The visual system for later page work is in [DESIGN.md](../DESIGN.md).
 - Login flows: register, sign in, sign out, and view account. Accounts are saved under `data/`. A login is not required to buy.
 - A cart is reviewed before checkout. Checkout collects shipping and a card, and accepts any card number except the demo numbers documented in [docs/errors](errors). A shopper can check out as a guest or create an account and save the card. Orders are written to `data/orders.json`. Signed-in orders and the saved card appear on the account page.
 

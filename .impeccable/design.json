@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T04:12:00Z",
+  "title": "Design System: Lumen Beauty",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Counter Rose", "canonical": "#e2186a", "tonalRamp": ["#3d0418", "#6e0c32", "#9d123c", "#c11259", "#e2186a", "#f25a94", "#ff9ec4", "#ffe4ef"] },
+      "primary-press": { "role": "primary", "displayName": "Pressed Rose", "canonical": "#c11259", "tonalRamp": ["#3d0418", "#6e0c32", "#9d123c", "#c11259", "#e2186a", "#f25a94", "#ff9ec4", "#ffe4ef"] },
+      "primary-ink": { "role": "primary", "displayName": "Petal Ink", "canonical": "#fff7fb", "tonalRamp": ["#3d0418", "#6e0c32", "#9d123c", "#c11259", "#e2186a", "#f25a94", "#ff9ec4", "#fff7fb"] },
+      "ink": { "role": "neutral", "displayName": "Plum Ink", "canonical": "#241433", "tonalRamp": ["#100818", "#241433", "#3a2450", "#4e3d63", "#6d5c84", "#9488aa", "#c4bad4", "#f4f0fa"] },
+      "ink-soft": { "role": "neutral", "displayName": "Soft Plum", "canonical": "#4e3d63", "tonalRamp": ["#100818", "#241433", "#3a2450", "#4e3d63", "#6d5c84", "#9488aa", "#c4bad4", "#f4f0fa"] },
+      "ground": { "role": "neutral", "displayName": "Lilac Room", "canonical": "#f4f0fa", "tonalRamp": ["#241433", "#3a2450", "#4e3d63", "#6d5c84", "#9488aa", "#c4bad4", "#e4dced", "#f4f0fa"] },
+      "surface": { "role": "neutral", "displayName": "Counter White", "canonical": "#ffffff", "tonalRamp": ["#241433", "#4e3d63", "#6d5c84", "#9488aa", "#c4bad4", "#e4dced", "#f4f0fa", "#ffffff"] },
+      "line": { "role": "neutral", "displayName": "Hairline Lilac", "canonical": "#efe6f6", "tonalRamp": ["#241433", "#4e3d63", "#6d5c84", "#9488aa", "#c4bad4", "#ddd0ea", "#efe6f6", "#ffffff"] },
+      "field-skincare": { "role": "tertiary", "displayName": "Skincare Field", "canonical": "#dff8f0", "tonalRamp": ["#0d3d30", "#145c45", "#1f7a5c", "#3d9e7a", "#7ddec0", "#b6f3e4", "#dff8f0", "#f4fffb"] },
+      "field-makeup": { "role": "tertiary", "displayName": "Makeup Field", "canonical": "#ffe3ef", "tonalRamp": ["#3d0418", "#9d123c", "#e2186a", "#ff7aa8", "#ffb0c6", "#ffd0e0", "#ffe3ef", "#fff7fb"] },
+      "field-service": { "role": "tertiary", "displayName": "Service Field", "canonical": "#efe6ff", "tonalRamp": ["#241433", "#3a2450", "#6d5c84", "#9488aa", "#c9b0ff", "#ddd0f5", "#efe6ff", "#f8f4ff"] },
+      "edge-rose": { "role": "secondary", "displayName": "Edge Rose", "canonical": "#ff7aa8", "tonalRamp": ["#3d0418", "#9d123c", "#e2186a", "#ff7aa8", "#ff9ec4", "#ffc2d8", "#ffe3ef", "#fff7fb"] },
+      "edge-peach": { "role": "secondary", "displayName": "Edge Peach", "canonical": "#ffb088", "tonalRamp": ["#4a1c08", "#8a3e16", "#c46a32", "#ffb088", "#ffc29a", "#ffd4b8", "#ffe8d6", "#fff6ef"] },
+      "edge-butter": { "role": "secondary", "displayName": "Edge Butter", "canonical": "#ffe08a", "tonalRamp": ["#3d3008", "#6e5a10", "#a88820", "#e2c45a", "#ffe08a", "#ffe9a8", "#fff3cc", "#fffbeb"] },
+      "edge-mint": { "role": "secondary", "displayName": "Edge Mint", "canonical": "#7ddec0", "tonalRamp": ["#0d3d30", "#145c45", "#1f7a5c", "#3d9e7a", "#7ddec0", "#b6f3e4", "#dff8f0", "#f4fffb"] },
+      "edge-sky": { "role": "secondary", "displayName": "Edge Sky", "canonical": "#8ec8ff", "tonalRamp": ["#0c2744", "#16406e", "#2d6eaa", "#5aa0e0", "#8ec8ff", "#b9dcff", "#e3f2ff", "#f5faff"] },
+      "edge-lilac": { "role": "secondary", "displayName": "Edge Lilac", "canonical": "#c9b0ff", "tonalRamp": ["#241433", "#3a2450", "#5a4080", "#7d62b0", "#c9b0ff", "#ddd0f5", "#efe6ff", "#f8f4ff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The page title. One per page." },
+      "headline": { "displayName": "Headline", "purpose": "Department and panel headings." },
+      "title": { "displayName": "Title", "purpose": "Product names and cart line names." },
+      "body": { "displayName": "Body", "purpose": "Descriptions and form copy." },
+      "label": { "displayName": "Label", "purpose": "Buttons, the wordmark, and form labels." }
+    },
+    "shadows": [
+      { "name": "floating-bar", "value": "0 10px 28px rgba(36, 20, 51, 0.14)", "purpose": "The toolbar after it has collapsed. Gone at the top of the page." },
+      { "name": "toast", "value": "0 16px 36px rgba(36, 20, 51, 0.16)", "purpose": "The added-to-cart toast, the only other shadow." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Presses and arrivals." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "The toolbar width morph." },
+      { "name": "press", "value": "transform 160ms cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Button press scales to 0.97." },
+      { "name": "bar", "value": "width 400ms cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "Desktop toolbar collapse after 8px of scroll." },
+      { "name": "toast-exit", "value": "transform 180ms cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Toast leaves back downward, faster than it entered." }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "760px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The next purchase or account action.",
+      "html": "<button class=\"ds-btn-primary\">Add to cart</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; padding: 0.55rem 1rem; border: 0; border-radius: 999px; background: var(--accent, #e2186a); color: var(--accent-ink, #fff7fb); font-family: Figtree, Segoe UI, sans-serif; font-size: 1rem; font-weight: 600; line-height: 1.2; cursor: pointer; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease; } .ds-btn-primary:hover { background: var(--accent-press, #c11259); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid #e2186a; outline-offset: 3px; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "A secondary toolbar action, such as Sign out.",
+      "html": "<button class=\"ds-btn-quiet\">Sign out</button>",
+      "css": ".ds-btn-quiet { display: inline-flex; align-items: center; justify-content: center; padding: 0.55rem 1rem; border: 0; border-radius: 999px; background: var(--ground, #f4f0fa); color: var(--ink, #241433); font-family: Figtree, Segoe UI, sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease; } .ds-btn-quiet:hover { background: #e7dff5; } .ds-btn-quiet:active { transform: scale(0.97); } .ds-btn-quiet:focus-visible { outline: 2px solid #e2186a; outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A square field on the lilac room color.",
+      "html": "<label class=\"ds-field\">Email<input class=\"ds-input\" type=\"email\"></label>",
+      "css": ".ds-field { display: grid; gap: 0.35rem; color: #241433; font-family: Figtree, Segoe UI, sans-serif; font-weight: 600; } .ds-input { min-height: 2.75rem; padding: 0.55rem 0.75rem; border: 0; border-radius: 0; background: #f4f0fa; color: #241433; font: inherit; font-weight: 500; caret-color: #e2186a; transition: background-color 160ms ease; } .ds-input:focus-visible { background: #ffffff; outline: 2px solid #e2186a; outline-offset: 3px; }"
+    },
+    {
+      "name": "Toolbar",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "The wide capsule. After scroll it hugs its contents and gains a shadow.",
+      "html": "<div class=\"ds-nav\"><div class=\"ds-nav-row\"><span class=\"ds-logo\">Lumen Beauty</span><span class=\"ds-links\"><span class=\"ds-current\">Shop</span><span>Cart</span></span><a class=\"ds-nav-action\">Create account</a></div><div class=\"ds-edge\"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>",
+      "css": ".ds-nav { width: min(100%, 640px); background: #ffffff; border-radius: 999px; overflow: hidden; font-family: Figtree, Segoe UI, sans-serif; color: #241433; } .ds-nav-row { display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; padding: 0.35rem 0.45rem 0.35rem 1.15rem; } .ds-logo { font-weight: 700; letter-spacing: -0.03em; } .ds-links { display: flex; gap: 1.35rem; } .ds-current { color: #e2186a; font-weight: 700; } .ds-nav-action { display: inline-flex; padding: 0.55rem 1rem; border-radius: 999px; background: #e2186a; color: #fff7fb; font-weight: 600; text-decoration: none; } .ds-edge { display: grid; grid-template-columns: repeat(6, 1fr); height: 0.42rem; } .ds-edge i:nth-child(1) { background: #ff7aa8; } .ds-edge i:nth-child(2) { background: #ffb088; } .ds-edge i:nth-child(3) { background: #ffe08a; } .ds-edge i:nth-child(4) { background: #7ddec0; } .ds-edge i:nth-child(5) { background: #8ec8ff; } .ds-edge i:nth-child(6) { background: #c9b0ff; }"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A square swatch, the product name, and a full-width add button.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-swatch\"></div><h3>Dew Face Mist</h3><p>A light mist to refresh makeup or bare skin.</p><p class=\"ds-price\">$18.00</p><button class=\"ds-btn-primary ds-block\">Add to cart</button></article>",
+      "css": ".ds-card { display: grid; gap: 0.4rem; width: 220px; padding: 0.7rem 0.7rem 0.85rem; background: #ffffff; color: #241433; font-family: Figtree, Segoe UI, sans-serif; } .ds-card h3 { margin: 0.15rem 0 0; font-size: 1.15rem; letter-spacing: -0.02em; } .ds-card p { margin: 0; color: #4e3d63; } .ds-price { color: #241433; font-weight: 700; } .ds-swatch { aspect-ratio: 1; background: #b6f3e4; } .ds-block { width: 100%; }"
+    },
+    {
+      "name": "Choice",
+      "kind": "chip",
+      "refersTo": "choice-selected",
+      "description": "A checkout option. Selected state is a petal wash.",
+      "html": "<label class=\"ds-choice\"><input type=\"radio\" checked> Guest</label>",
+      "css": ".ds-choice { display: inline-flex; align-items: center; gap: 0.65rem; min-height: 2.75rem; padding: 0.4rem 0.85rem; background: #ffd6e6; color: #241433; font-family: Figtree, Segoe UI, sans-serif; font-weight: 600; } .ds-choice input { accent-color: #e2186a; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Daylight Counter",
+    "overview": "Lumen Beauty is a local shop the visitor buys from, not a campaign they read. The room is a cool lilac. The counter is white. Cosmetic color does the job product photography would do: each item is a flat swatch, and each department sits on its own field. The toolbar is the one piece of chrome. It starts as a wide capsule and, after a short scroll, eases into a compact pill so the products stay easy to reach.\n\nDensity stays comfortable. Purchase actions are filled pills. Everything else is a change of tone, not a line or a shadow. Copy, prices, and the path from shelf to checkout are product truth. A visual change does not rewrite them.",
+    "keyCharacteristics": [
+      "One face, Figtree, self-hosted, with Segoe UI as the fallback.",
+      "One action color, used on the next thing the shopper does.",
+      "Product color is flat and specific to the item or the department.",
+      "The toolbar is a capsule that collapses on scroll, on desktop.",
+      "Surfaces separate by tone. Shadows appear only on what is floating.",
+      "Motion is short, ease-out for arrivals and presses, ease-in-out for the bar morph."
+    ],
+    "rules": [
+      { "name": "The One Action Rule", "body": "Rose is the next step. It is not a decoration on headings, section fields, or swatches.", "section": "colors" },
+      { "name": "The Swatch Rule", "body": "Each product has one flat color. Departments have one field. Nothing fades from one into the other.", "section": "colors" },
+      { "name": "The One Face Rule", "body": "Do not add a serif, a script, or a monospace label. Figtree files live with the static assets and load from the font stylesheet.", "section": "typography" },
+      { "name": "The Purchase Path Rule", "body": "Shop, cart, and the account action stay visible in the toolbar. Do not hide them behind a menu on desktop. On small screens they remain on the bar, not in a drawer.", "section": "layout" },
+      { "name": "The Flat Rest Rule", "body": "If it is not floating over other content, it does not have a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep rose for the next purchase or account action, and use the cosmetic spectrum for products.",
+      "Do give a new catalog item its own flat swatch, and a new department one field color.",
+      "Do keep the toolbar's collapse measured, desktop-only, and shadow-only on small screens.",
+      "Do use ease-out (cubic-bezier(0.23, 1, 0.32, 1)) for presses and arrivals, and ease-in-out (cubic-bezier(0.77, 0, 0.175, 1)) for the bar morph.",
+      "Do leave content visible when reduced motion is on. Drop the travel, keep the color and the state.",
+      "Do gate hover motion behind a fine pointer."
+    ],
+    "donts": [
+      "Don't change product names, prices, summaries, or checkout fields as part of a visual change.",
+      "Don't add a second typeface, a gradient, a hairline between sections, or a shadow on a resting card.",
+      "Don't hide Shop or Cart, or replace the toolbar with a different navigation model.",
+      "Don't animate the bar on first paint, or set its collapsed width by hand.",
+      "Don't bring back the warm paper and terracotta look. That was the previous storefront, not this one."
+    ]
+  }
+}

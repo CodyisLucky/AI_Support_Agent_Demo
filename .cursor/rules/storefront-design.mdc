@@ -1,0 +1,17 @@
+---
+description: Visual system for the Lumen Beauty storefront. Use when adding or restyling shop pages, templates, or static CSS.
+globs: app/templates/**/*.html,app/static/style.css,app/static/nav.js
+alwaysApply: false
+---
+
+# Storefront design
+
+Follow `DESIGN.md` before changing how the shop looks. Copy, prices, form fields, and the path from shelf to checkout stay put unless the task changes them.
+
+- Rose (`#e2186a`) is only the next action: add to cart, checkout, create account, text links. Product color lives in swatches and department fields.
+- A new catalog id needs a `.photo-{id}` swatch in `app/static/style.css`. A new department needs a `.shelf-{kind}` field. The word "photo" stays in the markup and stays unshown.
+- The toolbar is a sticky capsule. At scroll 0 it is wide and flat. After 8px, desktop only, it hugs its content and gains a shadow. `app/static/nav.js` measures that width. Do not hard-code it.
+- At 760px and below the bar stays full width and only the shadow changes. Shop, Cart, and the account action stay visible.
+- No shadow on resting cards, inputs, or panels. Shadows are the collapsed bar (`0 10px 28px rgba(36, 20, 51, 0.14)`) and the toast.
+- Press is `scale(0.97)` in 160ms ease-out. The bar morphs in 400ms ease-in-out. Hover motion only for a fine pointer. Reduced motion keeps the content and drops the travel.
+- Figtree is the only face, self-hosted in `app/static/fonts/`.
