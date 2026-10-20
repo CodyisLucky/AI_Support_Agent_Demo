@@ -1,5 +1,7 @@
 import json
 import secrets
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 
@@ -7,6 +9,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 USERS_PATH = DATA_DIR / "users.json"
 ORDERS_PATH = DATA_DIR / "orders.json"
+CHATS_PATH = DATA_DIR / "chats.json"
 ERRORS_PATH = DATA_DIR / "errors.jsonl"
 SECRET_PATH = DATA_DIR / "session_secret"
 
@@ -17,6 +20,10 @@ class StorageError(Exception):
     def __init__(self, operation: str):
         self.operation = operation
         super().__init__(operation)
+
+
+class ChatFull(Exception):
+    """This visit's transcript has reached the shopper-message limit."""
 
 DEMO_USERNAME = "demo"
 DEMO_DISPLAY_NAME = "Demo Shopper"
@@ -140,3 +147,70 @@ def errors_for_user(user_id: str, limit: int = 20) -> list[dict]:
 def errors_for_session(session_id: str, limit: int = 50) -> list[dict]:
     matched = [entry for entry in _read_errors() if entry.get("session_id") == session_id]
     return _recent(matched, limit)
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _load_chats() -> list[dict]:
+    payload = _read_json(CHATS_PATH, {"chats": []})
+    return [chat for chat in payload.get("chats", []) if isinstance(chat, dict)]
+
+
+def chat_for_session(session_id: str) -> dict | None:
+    try:
+        with _lock:
+            chats = _load_chats()
+    except (OSError, json.JSONDecodeError) as exc:
+        raise StorageError("read chats") from exc
+    for chat in chats:
+        if chat.get("session_id") == session_id:
+            return chat
+    return None
+
+
+def append_chat_turn(
+    session_id: str,
+    user_id: str | None,
+    shopper_text: str,
+    agent_text: str,
+    limit: int = 100,
+) -> list[dict]:
+    """Save one shopper message and the reply that follows it.
+
+    Returns those two messages. Raises ChatFull when this session already
+    holds `limit` shopper messages, and StorageError when the file cannot
+    be written.
+    """
+    now = _utc_now()
+    shopper = {"role": "shopper", "text": shopper_text, "time": now, "user_id": user_id}
+    agent = {"role": "agent", "text": agent_text, "time": now}
+    try:
+        with _lock:
+            chats = _load_chats()
+            chat = next((item for item in chats if item.get("session_id") == session_id), None)
+            if chat is None:
+                chat = {
+                    "id": str(uuid.uuid4()),
+                    "session_id": session_id,
+                    "user_id": user_id,
+                    "created_at": now,
+                    "updated_at": now,
+                    "messages": [],
+                }
+                chats.append(chat)
+            messages = [item for item in chat.get("messages", []) if isinstance(item, dict)]
+            shopper_count = sum(1 for item in messages if item.get("role") == "shopper")
+            if shopper_count >= limit:
+                raise ChatFull()
+            messages.extend([shopper, agent])
+            chat["messages"] = messages
+            chat["user_id"] = user_id
+            chat["updated_at"] = now
+            _write_json(CHATS_PATH, {"chats": chats})
+    except ChatFull:
+        raise
+    except (OSError, json.JSONDecodeError) as exc:
+        raise StorageError("write chats") from exc
+    return [shopper, agent]

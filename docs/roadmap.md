@@ -32,7 +32,9 @@ Codes **500**–**507** are the shop or a service it calls, not a mistake in wha
 
 ## Step 5 — Chat window
 
-A popup chat on the storefront. It can send a shopper message and show a reply. Until step 6, the reply can be a stub. Transcripts are saved on disk next to orders so a demo can be replayed.
+Done. Every page has a Help bubble at the bottom right. It opens a chat on that page. The shopper sends a message and gets a reply. Until step 6, the reply is a stub.
+
+The visit's transcript is saved in `data/chats.json`, next to orders. One chat per `session_id`, the same id as `data/errors.jsonl`. Each shopper message stores the account id for that turn, or null when no one is signed in. A demo can replay the file.
 
 ## Step 6 — Train and connect the agent
 

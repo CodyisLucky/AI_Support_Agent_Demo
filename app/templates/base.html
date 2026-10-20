@@ -68,5 +68,47 @@
     {% block content %}{% endblock %}
   </main>
   <script src="/static/nav.js"></script>
+  <details class="chat" id="help"{% if chat_open %} open{% endif %}>
+    <summary class="chat-launcher">
+      <svg class="chat-icon chat-icon-closed" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path fill="currentColor" d="M4.5 4.5h15V15H9.1L4.5 19.2V4.5z"/>
+      </svg>
+      <svg class="chat-icon chat-icon-open" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path fill="currentColor" d="M6.7 5.3 12 10.6 17.3 5.3 18.7 6.7 13.4 12 18.7 17.3 17.3 18.7 12 13.4 6.7 18.7 5.3 17.3 10.6 12 5.3 6.7z"/>
+      </svg>
+      <span class="clip chat-label-closed">Help</span>
+      <span class="clip chat-label-open">Close</span>
+    </summary>
+    <script>
+      (function () {
+        var chat = document.getElementById("help");
+        try {
+          if (sessionStorage.getItem("lumen-chat-open") === "1") chat.open = true;
+        } catch (err) {}
+      })();
+    </script>
+    <div class="chat-panel" id="chat-panel" role="dialog" aria-labelledby="chat-title">
+      <div class="chat-head">
+        <h2 class="chat-title" id="chat-title">Help</h2>
+      </div>
+      <ol class="chat-log" id="chat-log">
+        {% for message in chat_messages %}
+        <li class="chat-{{ message.role }}"><p>{{ message.text }}</p></li>
+        {% else %}
+        <li class="chat-empty"><p>Ask about a product, an order, or an error.</p></li>
+        {% endfor %}
+      </ol>
+      <form class="chat-form" method="post" action="/chat">
+        <div class="chat-compose">
+          <label class="clip" for="chat-message">Message</label>
+          <input id="chat-message" name="chat_message" type="text" maxlength="2000" autocomplete="off" enterkeyhint="send" placeholder="Ask a question" required>
+          <button type="submit">Send</button>
+        </div>
+        <p class="chat-error" id="chat-error" aria-live="polite"></p>
+      </form>
+      <p class="clip" id="chat-status" aria-live="polite"></p>
+    </div>
+  </details>
+  <script src="/static/chat.js"></script>
 </body>
 </html>

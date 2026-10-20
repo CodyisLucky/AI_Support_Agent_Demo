@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -31,9 +32,10 @@ from app.backend import (
     orders_unreadable,
 )
 from app.catalog import format_price, get_item, in_stock, sections
+from app.chat import MAX_MESSAGE_LENGTH, clean_message, record_turn, visible_messages
 from app.errors import log_error, message, session_is_stale, utc_now
 from app.shop_session import ShopSessionMiddleware, shop_session_id
-from app.storage import StorageError, append_order, get_order, orders_for_user, session_secret
+from app.storage import ChatFull, StorageError, append_order, get_order, orders_for_user, session_secret
 
 APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
@@ -138,6 +140,38 @@ def pop_added(request: Request) -> str | None:
     return added if isinstance(added, str) and added else None
 
 
+def pop_chat_open(request: Request) -> bool:
+    return request.session.pop("chat_open", False) is True
+
+
+def wants_json(request: Request) -> bool:
+    return "application/json" in request.headers.get("accept", "")
+
+
+def return_path(request: Request) -> str:
+    parsed = urlparse(request.headers.get("referer", ""))
+    if parsed.netloc and parsed.netloc != request.url.netloc:
+        return "/"
+    path = parsed.path or "/"
+    if not path.startswith("/") or path.startswith("//"):
+        return "/"
+    target = f"{path}?{parsed.query}" if parsed.query else path
+    if any(character in target for character in "\\\r\n\t"):
+        return "/"
+    return target
+
+
+def chat_result(request: Request, payload: dict, status: int = 200, code: str | None = None):
+    if wants_json(request):
+        if code and payload.get("error"):
+            payload = {**payload, "error": f"Error {code}. {payload['error']}"}
+        return JSONResponse(payload, status_code=status)
+    if status >= 400 and payload.get("error"):
+        set_flash(request, "error", payload["error"], code)
+    request.session["chat_open"] = True
+    return RedirectResponse(return_path(request), status_code=303)
+
+
 def cart_quantities(request: Request) -> dict[str, int]:
     raw = request.session.get("cart") or {}
     quantities: dict[str, int] = {}
@@ -175,16 +209,24 @@ def user_id_of(user: dict | None) -> str | None:
 
 
 def render(request: Request, name: str, **context):
+    user = current_user(request)
     quantities = cart_quantities(request)
+    session_id = shop_session_id(request)
+    try:
+        transcript = visible_messages(session_id) if session_id else []
+    except StorageError:
+        transcript = []
     return templates.TemplateResponse(
         request,
         name,
         {
-            "user": current_user(request),
+            "user": user,
             "flash": pop_flash(request),
             "added": pop_added(request),
             "cart_count": sum(quantities.values()),
-            "session_id": shop_session_id(request),
+            "session_id": session_id,
+            "chat_messages": transcript,
+            "chat_open": pop_chat_open(request),
             **context,
         },
     )
@@ -616,6 +658,33 @@ def account(request: Request):
         record_fault(request, "506", user["id"], "username recordsdown")
         return render(request, "account.html", orders=[], orders_unavailable=True)
     return render(request, "account.html", orders=orders)
+
+
+@app.post("/chat")
+def post_chat(request: Request, chat_message: str = Form("")):
+    user = current_user(request)
+    if getattr(request.state, "session_expired", False):
+        if wants_json(request):
+            return JSONResponse({"error": f"Error 102. {message('102')}"}, status_code=401)
+        return RedirectResponse("/login", status_code=303)
+    text = clean_message(chat_message)
+    if not text:
+        return chat_result(request, {"error": "Enter a message."}, 400)
+    if len(text) > MAX_MESSAGE_LENGTH:
+        return chat_result(request, {"error": "Use 2,000 characters or fewer."}, 400)
+    session_id = shop_session_id(request)
+    user_id = user_id_of(user)
+    if not session_id:
+        log_error(user_id, "500", detail="missing shop session")
+        return chat_result(request, {"error": message("500")}, 500, "500")
+    try:
+        messages = record_turn(session_id, user_id, text)
+    except ChatFull:
+        return chat_result(request, {"error": "This conversation has reached its limit."}, 400)
+    except StorageError as exc:
+        log_error(user_id, "500", detail=exc.operation, session_id=session_id)
+        return chat_result(request, {"error": message("500")}, 500, "500")
+    return chat_result(request, {"messages": messages})
 
 
 @app.post("/logout")
