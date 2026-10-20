@@ -1,6 +1,6 @@
 # Roadmap
 
-Step 1 is done: this repo, [README.md](../README.md), and this file. The app is not built yet.
+Step 1 is done: this repo, [README.md](../README.md), and this file. Step 2 has the Lumen Beauty shop, login, and local purchases.
 
 The support model and retrieval approach are deferred to step 6. Product docs and error logs should stay plain files an agent can read either by loading them into a prompt or by retrieving relevant pages.
 
@@ -8,15 +8,17 @@ The support model and retrieval approach are deferred to step 6. Product docs an
 
 FastAPI app serving plain HTML.
 
-- A shop page with fake products and services a shopper can "purchase."
-- Login and generic account flows (register, sign in, sign out, view account).
-- Accounts and orders saved under `data/` on disk. No hosting.
+- Shop, sign-in, create-account, account, cart, and checkout pages are done. The catalog has 25 skincare, makeup, and service items. Cards use a square labeled “photo” instead of an image.
+- Login flows: register, sign in, sign out, and view account. Accounts are saved under `data/`. A login is not required to buy.
+- A cart is reviewed before checkout. Checkout collects shipping and a card, and accepts any card number. A shopper can check out as a guest or create an account and save the card. Orders are written to `data/orders.json`. Signed-in orders and the saved card appear on the account page.
 
-**Seeded shopper.** Include one local account with known orders and a known failure so a walkthrough is repeatable. Document the username in the README when the account exists.
+**Seeded shopper.** Username `demo`, password `demo-shopper`, created on first launch. Known orders and a known failure wait until the catalog and the error-code step exist.
 
 ## Step 3 — Product documentation
 
-Verbose documentation for every product and service offered, written for a support agent: what it is, what it costs, what is included, limits, and common shopper questions. Keep these as files separate from the HTML so step 6 can load them without scraping the storefront.
+Done. [docs/catalog](catalog) has one file per product and service, plus an index and a short guide for the agent. The files are separate from the HTML so step 6 can load them without scraping the storefront.
+
+Each file includes what it is, price and size, ingredients or what a service includes, benefits, drawbacks, when it works, when it does not, how to use it, and shopper questions with answers. Prices and shades in those files match the shop.
 
 ## Step 4 — Error logging
 

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Shop · Lumen Beauty{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">Local beauty shop</p>
+  <h1>Skincare, makeup, and appointments</h1>
+  <p class="lede">Add products and appointments to your cart and review them before checkout. You can buy as a guest or sign in. Purchases stay on this machine.</p>
+</section>
+{% for section in sections %}
+<section class="shelf" aria-labelledby="section-{{ loop.index }}">
+  <h2 id="section-{{ loop.index }}">{{ section.title }}</h2>
+  <div class="catalog">
+    {% for item in section.entries %}
+    <article class="card">
+      <div class="photo" aria-hidden="true">photo</div>
+      <h3>{{ item.name }}</h3>
+      <p>{{ item.summary }}</p>
+      <p class="price">{{ item.price_cents | price }}</p>
+      <form method="post" action="/cart/add">
+        <input type="hidden" name="item_id" value="{{ item.id }}">
+        <button type="submit">Add to cart</button>
+      </form>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

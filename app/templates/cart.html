@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Cart · Lumen Beauty{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Cart</h1>
+  <p class="lede">Review what you are taking home or booking, then check out. An account is optional.</p>
+</section>
+{% if lines %}
+<section class="panel">
+  <ul class="cart-lines">
+    {% for line in lines %}
+    <li>
+      <div class="photo photo-small" aria-hidden="true">photo</div>
+      <div>
+        <h2>{{ line.name }}</h2>
+        <p>{{ line.price_cents | price }} each</p>
+      </div>
+      <form method="post" action="/cart/update" class="qty">
+        <input type="hidden" name="item_id" value="{{ line.id }}">
+        <label>
+          Qty
+          <input name="quantity" type="number" min="0" max="9" value="{{ line.qty }}">
+        </label>
+        <button type="submit">Update</button>
+      </form>
+      <p class="price">{{ line.line_cents | price }}</p>
+      <form method="post" action="/cart/update">
+        <input type="hidden" name="item_id" value="{{ line.id }}">
+        <input type="hidden" name="quantity" value="0">
+        <button class="text-button" type="submit">Remove</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  <p class="total">Total {{ total_cents | price }}</p>
+  <a class="button" href="/checkout">Checkout</a>
+</section>
+{% else %}
+<section class="panel">
+  <p>Your cart is empty. <a href="/">Browse the shop</a>.</p>
+</section>
+{% endif %}
+{% endblock %}

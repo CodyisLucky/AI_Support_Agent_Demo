@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Create account · Lumen Beauty{% endblock %}
+
+{% block content %}
+<section class="narrow">
+  <h1>Create account</h1>
+  <p class="lede">Accounts are saved locally in this project and are not sent anywhere.</p>
+  <form method="post" action="/register" class="stack">
+    <label>
+      Username
+      <input name="username" autocomplete="username" required value="{{ username }}">
+    </label>
+    <label>
+      Display name
+      <input name="display_name" autocomplete="name" required value="{{ display_name }}">
+    </label>
+    <label>
+      Password
+      <input name="password" type="password" autocomplete="new-password" required minlength="8">
+    </label>
+    <label>
+      Confirm password
+      <input name="confirm" type="password" autocomplete="new-password" required minlength="8">
+    </label>
+    <button type="submit">Create account</button>
+  </form>
+  <p class="aside">Already registered? <a href="/login">Sign in</a>.</p>
+</section>
+{% endblock %}

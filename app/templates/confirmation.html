@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Order confirmed · Lumen Beauty{% endblock %}
+
+{% block content %}
+<section class="narrow">
+  <p class="eyebrow">Order confirmed</p>
+  <h1>Thank you{% if order.guest_name %}, {{ order.guest_name }}{% endif %}</h1>
+  <p class="lede">This order is saved on this machine{% if order.guest_email %} for {{ order.guest_email }}{% endif %}.</p>
+  <ul class="summary">
+    {% for line in order.lines %}
+      <li>
+        <span>{{ line.qty }} × {{ line.name }}</span>
+        <span>{{ (line.price_cents * line.qty) | price }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  <p class="total">Total {{ order.total_cents | price }}</p>
+  {% if order.shipping %}
+  <h2>Shipping</h2>
+  <p>
+    {{ order.shipping.name }}<br>
+    {{ order.shipping.line1 }}<br>
+    {{ order.shipping.city }}, {{ order.shipping.region }} {{ order.shipping.postal }}
+  </p>
+  {% endif %}
+  {% if order.payment %}
+  <p>Paid with card ending in {{ order.payment.last4 }}.</p>
+  {% endif %}
+  <p class="aside">Order {{ order.id }}</p>
+  <p class="aside"><a href="/">Back to the shop</a></p>
+</section>
+{% endblock %}

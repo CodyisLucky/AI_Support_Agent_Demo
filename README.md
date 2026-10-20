@@ -16,7 +16,7 @@ The support model and how it reads documentation (full prompt vs retrieval) are 
 
 1. **Repo and starter docs.** Git metadata, this README, and [docs/roadmap.md](docs/roadmap.md).
 2. **Storefront.** Lumen Beauty shop with 25 skincare, makeup, and service items. Guests and signed-in shoppers can review a cart and check out locally.
-3. **Product documentation.** Verbose docs for every product and service, written so a support agent can answer shopper questions from them.
+3. **Product documentation.** Done. Agent-facing docs for all 25 products and services are in [docs/catalog](docs/catalog).
 4. **Error logging.** Three-digit error codes for problems a shopper can hit, with logs and documentation an agent can use.
 5. **Chat window.** A popup on the storefront that talks to the support agent.
 6. **Train and connect the agent.** Choose the model and connect it to the docs, logs, and chat window.

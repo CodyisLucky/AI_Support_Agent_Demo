@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Account · Lumen Beauty{% endblock %}
+
+{% block content %}
+<section class="narrow">
+  <p class="eyebrow">Signed in</p>
+  <h1>{{ user.display_name }}</h1>
+  <dl class="meta">
+    <div>
+      <dt>Username</dt>
+      <dd>{{ user.username }}</dd>
+    </div>
+    <div>
+      <dt>Member since</dt>
+      <dd>{{ user.created_at }}</dd>
+    </div>
+  </dl>
+</section>
+<section class="panel" aria-labelledby="card-heading">
+  <h2 id="card-heading">Saved card</h2>
+  {% if user.saved_card %}
+    <p>Card ending in {{ user.saved_card.last4 }}{% if user.saved_card.expiry %}, expires {{ user.saved_card.expiry }}{% endif %}.</p>
+  {% else %}
+    <p>No card saved. You can save one during checkout.</p>
+  {% endif %}
+</section>
+<section class="panel" aria-labelledby="orders-heading">
+  <h2 id="orders-heading">Orders</h2>
+  {% if orders %}
+    <ul class="orders">
+      {% for order in orders %}
+        <li>
+          <div>
+            {% for line in order.lines %}
+              <span>{{ line.qty }} × {{ line.name }}</span>
+            {% endfor %}
+          </div>
+          <span>{{ order.total_cents | price }}</span>
+          <time datetime="{{ order.created_at }}">{{ order.created_at }}</time>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No orders yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

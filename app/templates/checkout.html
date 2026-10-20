@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout · Lumen Beauty{% endblock %}
+
+{% block content %}
+<section class="checkout">
+  <h1>Checkout</h1>
+  {% if user %}
+    <p class="lede">Placing this order as {{ user.display_name }}. It will be saved on your account.</p>
+  {% else %}
+    <p class="lede">Check out as a guest, or create an account so this purchase is saved to you.</p>
+  {% endif %}
+  <ul class="summary">
+    {% for line in lines %}
+      <li><span>{{ line.qty }} × {{ line.name }}</span><span>{{ line.line_cents | price }}</span></li>
+    {% endfor %}
+  </ul>
+  <p class="total">Total {{ total_cents | price }}</p>
+
+  <form method="post" action="/checkout" class="stack" id="checkout-form">
+    {% if not user %}
+    <fieldset class="choices">
+      <legend>How do you want to check out?</legend>
+      <label class="choice">
+        <input type="radio" name="checkout_as" value="guest" {% if form.checkout_as != "account" %}checked{% endif %}>
+        Guest
+      </label>
+      <label class="choice">
+        <input type="radio" name="checkout_as" value="account" {% if form.checkout_as == "account" %}checked{% endif %}>
+        Create an account
+      </label>
+    </fieldset>
+    <div id="guest-fields">
+      <label>
+        Name
+        <input name="guest_name" autocomplete="name" value="{{ form.guest_name }}">
+      </label>
+      <label>
+        Email
+        <input name="guest_email" type="email" autocomplete="email" value="{{ form.guest_email }}">
+      </label>
+    </div>
+    <div id="account-fields">
+      <label>
+        Username
+        <input name="username" autocomplete="username" value="{{ form.username }}">
+      </label>
+      <label>
+        Display name
+        <input name="display_name" autocomplete="name" value="{{ form.display_name }}">
+      </label>
+      <label>
+        Password
+        <input name="password" type="password" autocomplete="new-password">
+      </label>
+      <label>
+        Confirm password
+        <input name="confirm" type="password" autocomplete="new-password">
+      </label>
+    </div>
+    {% endif %}
+
+    <fieldset>
+      <legend>Shipping</legend>
+      <div class="stack">
+        <label>
+          Recipient
+          <input name="ship_name" autocomplete="shipping name" value="{{ form.ship_name }}">
+        </label>
+        <label>
+          Street address
+          <input name="ship_line1" autocomplete="shipping address-line1" value="{{ form.ship_line1 }}">
+        </label>
+        <label>
+          City
+          <input name="ship_city" autocomplete="shipping address-level2" value="{{ form.ship_city }}">
+        </label>
+        <label>
+          State
+          <input name="ship_region" autocomplete="shipping address-level1" value="{{ form.ship_region }}">
+        </label>
+        <label>
+          Postal code
+          <input name="ship_postal" autocomplete="shipping postal-code" value="{{ form.ship_postal }}">
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Card</legend>
+      <div class="stack">
+        {% if user and user.saved_card %}
+        <label class="choice">
+          <input type="radio" name="pay_with" value="saved" {% if form.pay_with != "new" %}checked{% endif %}>
+          Use saved card ending in {{ user.saved_card.last4 }}
+        </label>
+        <label class="choice">
+          <input type="radio" name="pay_with" value="new" {% if form.pay_with == "new" %}checked{% endif %}>
+          Use a new card
+        </label>
+        {% endif %}
+        <div id="new-card" class="stack">
+          <p class="aside">Any card number is accepted. This demo does not charge a real card.</p>
+          <label>
+            Name on card
+            <input name="card_name" autocomplete="cc-name" value="{{ form.card_name }}">
+          </label>
+          <label>
+            Card number
+            <input name="card_number" inputmode="numeric" autocomplete="cc-number" value="{{ form.card_number }}">
+          </label>
+          <label>
+            Expiration
+            <input name="card_expiry" autocomplete="cc-exp" placeholder="MM/YY" value="{{ form.card_expiry }}">
+          </label>
+          <label>
+            Security code
+            <input name="card_cvc" autocomplete="cc-csc">
+          </label>
+          <label class="choice" id="save-card">
+            <input type="checkbox" name="save_card_choice" value="yes" {% if form.save_card %}checked{% endif %}>
+            Save this card to the account
+          </label>
+        </div>
+      </div>
+    </fieldset>
+
+    <button type="submit">Place order</button>
+  </form>
+  <p class="aside"><a href="/cart">Back to cart</a></p>
+</section>
+<script>
+  const guestFields = document.getElementById("guest-fields");
+  const accountFields = document.getElementById("account-fields");
+  const newCard = document.getElementById("new-card");
+  const saveCard = document.getElementById("save-card");
+
+  function syncAccount() {
+    const choice = document.querySelector('input[name="checkout_as"]:checked');
+    const asAccount = choice && choice.value === "account";
+    if (guestFields) guestFields.hidden = asAccount;
+    if (accountFields) accountFields.hidden = !asAccount;
+    if (saveCard) saveCard.hidden = choice ? !asAccount : false;
+  }
+
+  function syncPay() {
+    const choice = document.querySelector('input[name="pay_with"]:checked');
+    const useSaved = choice && choice.value === "saved";
+    if (newCard) newCard.hidden = Boolean(useSaved);
+  }
+
+  document.querySelectorAll('input[name="checkout_as"]').forEach((input) => {
+    input.addEventListener("change", syncAccount);
+  });
+  document.querySelectorAll('input[name="pay_with"]').forEach((input) => {
+    input.addEventListener("change", syncPay);
+  });
+  syncAccount();
+  syncPay();
+</script>
+{% endblock %}

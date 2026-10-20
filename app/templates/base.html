@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Lumen Beauty{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="/">Lumen Beauty</a>
+    <nav class="nav">
+      <a href="/">Shop</a>
+      <a href="/cart">Cart{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+      {% if user %}
+        <a href="/account">Account</a>
+        <form method="post" action="/logout">
+          <button class="link" type="submit">Sign out</button>
+        </form>
+      {% else %}
+        <a href="/login">Sign in</a>
+        <a class="nav-accent" href="/register">Create account</a>
+      {% endif %}
+    </nav>
+  </header>
+  {% if flash %}
+    <p class="flash flash-{{ flash.kind }}" role="status">{{ flash.text }}</p>
+  {% endif %}
+  {% if added %}
+    <div class="toast" id="added-toast" role="status">
+      <p>Added {{ added }} to your cart.</p>
+      <a href="/cart">View cart</a>
+      <button type="button" class="toast-close" aria-label="Dismiss">Close</button>
+    </div>
+    <script>
+      const toast = document.getElementById("added-toast");
+      const hide = () => { if (toast) toast.remove(); };
+      toast.querySelector(".toast-close").addEventListener("click", hide);
+      setTimeout(hide, 4500);
+    </script>
+  {% endif %}
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
