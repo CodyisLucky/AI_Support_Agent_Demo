@@ -27,7 +27,9 @@
 </section>
 <section class="panel" aria-labelledby="orders-heading">
   <h2 id="orders-heading">Orders</h2>
-  {% if orders %}
+  {% if orders_unavailable %}
+    <p>Orders could not be loaded.</p>
+  {% elif orders %}
     <ul class="orders">
       {% for order in orders %}
         <li>

@@ -145,6 +145,7 @@ ITEMS: list[dict] = [
         "kind": "makeup",
         "price_cents": 2200,
         "summary": "A cream highlighter for cheekbones, tapped on with a finger.",
+        "stock": 0,
     },
     {
         "id": "lip-liner",
@@ -187,6 +188,11 @@ SECTIONS = (
 
 def get_item(item_id: str) -> dict | None:
     return _BY_ID.get(item_id)
+
+
+def in_stock(item: dict) -> bool:
+    stock = item.get("stock")
+    return stock is None or stock > 0
 
 
 def format_price(cents: int) -> str:

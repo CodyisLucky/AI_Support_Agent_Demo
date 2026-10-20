@@ -16,6 +16,7 @@
       <div>
         <h2>{{ line.name }}</h2>
         <p>{{ line.price_cents | price }} each</p>
+        {% if line.stock == 0 %}<p class="stock">Out of stock</p>{% endif %}
       </div>
       <form method="post" action="/cart/update" class="qty">
         <input type="hidden" name="item_id" value="{{ line.id }}">

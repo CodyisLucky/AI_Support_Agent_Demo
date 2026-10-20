@@ -17,7 +17,7 @@ The support model and how it reads documentation (full prompt vs retrieval) are 
 1. **Repo and starter docs.** Git metadata, this README, and [docs/roadmap.md](docs/roadmap.md).
 2. **Storefront.** Lumen Beauty shop with 25 skincare, makeup, and service items. Guests and signed-in shoppers can review a cart and check out locally.
 3. **Product documentation.** Done. Agent-facing docs for all 25 products and services are in [docs/catalog](docs/catalog).
-4. **Error logging.** Three-digit error codes for problems a shopper can hit, with logs and documentation an agent can use.
+4. **Error logging.** Done. Three-digit codes fire from real shop flows and are documented in [docs/errors](docs/errors). Each line in `data/errors.jsonl` has the time, user id, and code.
 5. **Chat window.** A popup on the storefront that talks to the support agent.
 6. **Train and connect the agent.** Choose the model and connect it to the docs, logs, and chat window.
 
@@ -47,4 +47,17 @@ A seeded shopper is created on first launch: username `demo`, password `demo-sho
 
 ## Step 2 status
 
-The shop is Lumen Beauty, a local beauty store with 25 items: skincare, makeup, a product consultation, and professional makeup. Each card uses a square labeled “photo” instead of an image. Shoppers add items to a cart, then check out with shipping and a card. Any card number is accepted. Guests can buy without an account, or create one during checkout and save the card. Orders are written to `data/orders.json`. Signed-in orders and a saved card appear on the account page. Only the last four characters of a card are stored.
+The shop is Lumen Beauty, a local beauty store with 25 items: skincare, makeup, a product consultation, and professional makeup. Each card uses a square labeled “photo” instead of an image. Shoppers add items to a cart, then check out with shipping and a card. Any card number is accepted except the demo numbers listed on checkout. Guests can buy without an account, or create one during checkout and save the card. Orders are written to `data/orders.json`. Signed-in orders and a saved card appear on the account page. Only the last four characters of a card are stored.
+
+## Step 4 status
+
+Shopper failures write a JSON line to `data/errors.jsonl` with `time`, `session_id`, `user_id`, `code`, and `detail`. The banner shows the same code. Docs for the agent are in [docs/errors](docs/errors).
+
+`session_id` is created on the first page load and stored in the browser cookie `lumen_sid` until the browser closes. It does not change when the shopper signs in or out, so a chat on that visit can be matched to the errors from the same visit. The page exposes the same value in `<meta name="shop-session">`.
+
+- **101** sign-in failed. **102** session expired after 30 minutes idle, a missing timestamp, or a missing account. **103** username already registered.
+- **201** card `4000000000000002` declined. **202** Warm Highlighter is out of stock. **203** checkout with an empty cart.
+- **301** order link this shopper cannot open.
+- **500** unknown shop error, including card `4000000000000500`. **501** payment processor unavailable (`4000000000000119`). **502** network unavailable (`4000000000000502`, or username `networkdown`). **503** account was not saved (`storagefail`, or the user file could not be written). **504** order was not saved (`4000000000000504`). **505** order placed, card not saved (`4000000000000505`). **506** account records could not be loaded (`recordsdown`, or a user or order file could not be read). **507** payment processor timed out (`4000000000000507`).
+
+A signed-out attempt stores `user_id` null, except a failed sign-in for a real account, which stores that account's id. The log does not store passwords or full card numbers.

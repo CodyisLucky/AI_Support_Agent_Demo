@@ -10,7 +10,7 @@ FastAPI app serving plain HTML.
 
 - Shop, sign-in, create-account, account, cart, and checkout pages are done. The catalog has 25 skincare, makeup, and service items. Cards use a square labeled “photo” instead of an image.
 - Login flows: register, sign in, sign out, and view account. Accounts are saved under `data/`. A login is not required to buy.
-- A cart is reviewed before checkout. Checkout collects shipping and a card, and accepts any card number. A shopper can check out as a guest or create an account and save the card. Orders are written to `data/orders.json`. Signed-in orders and the saved card appear on the account page.
+- A cart is reviewed before checkout. Checkout collects shipping and a card, and accepts any card number except the demo numbers documented in [docs/errors](errors). A shopper can check out as a guest or create an account and save the card. Orders are written to `data/orders.json`. Signed-in orders and the saved card appear on the account page.
 
 **Seeded shopper.** Username `demo`, password `demo-shopper`, created on first launch. Known orders and a known failure wait until the catalog and the error-code step exist.
 
@@ -22,11 +22,13 @@ Each file includes what it is, price and size, ingredients or what a service inc
 
 ## Step 4 — Error logging
 
-Three-digit error codes for problems a shopper can hit on a real site, plus documentation of each code (what the shopper sees, likely cause, what to try).
+Done. [docs/errors](errors) documents each code: what the shopper sees, when it happens, the likely cause, and what to try. The shop writes `data/errors.jsonl`. Each line has `time`, `session_id`, `user_id`, `code`, and a short `detail`.
 
-**Errors the shopper can actually hit.** Codes should fire from real flows, such as a bad login, an expired session, a declined payment, or an out-of-stock item.
+`session_id` starts on the first page load, stays through sign-in and sign-out, and ends when the browser closes. A later chat can read it from the `lumen_sid` cookie or from `<meta name="shop-session">` and look up that visit's lines.
 
-**Correlation.** Each log line includes user id, time, and code so a later agent can look up what just happened to the signed-in shopper.
+Codes fire from the flows themselves. **101** is a bad sign-in, **102** is a session that has been idle for 30 minutes (or has no timestamp, or points at a missing account), **201** is the card `4000000000000002`, and **202** is Warm Highlighter, which has no stock. **103**, **203**, and **301** cover a taken username, an empty cart at checkout, and an order this shopper cannot open.
+
+Codes **500**–**507** are the shop or a service it calls, not a mistake in what the shopper typed. They cover an unknown failure, the payment processor being down or timing out, the network being down, an account or order that could not be saved, a card that could not be saved after the order was placed, and account records that could not be read. An unhandled exception is logged as **500**. A failed sign-in for a real account is stored under that account's id. Guest events use `user_id` null. Passwords and full card numbers are not logged.
 
 ## Step 5 — Chat window
 

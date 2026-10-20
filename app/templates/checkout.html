@@ -100,7 +100,7 @@
         </label>
         {% endif %}
         <div id="new-card" class="stack">
-          <p class="aside">Any card number is accepted. This demo does not charge a real card.</p>
+          <p class="aside">This demo does not charge a real card. Any other number is accepted. These numbers fail on purpose: 4000000000000002 declined (201), 4000000000000119 processor unavailable (501), 4000000000000502 network unavailable (502), 4000000000000507 processor timed out (507), 4000000000000504 order not saved (504), 4000000000000500 unknown error (500). Saving 4000000000000505 to an account places the order and fails to store the card (505).</p>
           <label>
             Name on card
             <input name="card_name" autocomplete="cc-name" value="{{ form.card_name }}">

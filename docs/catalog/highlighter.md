@@ -80,6 +80,10 @@ It is a face highlighter. Cream Eyeshadow in Soft Taupe is the eye product. A ti
 
 Yes. Cheekbone only is a complete way to use it.
 
+### Can I buy it right now?
+
+No. Warm Highlighter is out of stock in the shop. Adding it to the cart returns error 202. Other makeup items are in stock.
+
 ### Why does it disappear when I powder?
 
 Soft Setting Powder mattifies. If you powder directly over the highlight, the sheen goes away. Powder around it, or skip powder on that spot.

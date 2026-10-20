@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="shop-session" content="{{ session_id }}">
   <title>{% block title %}Lumen Beauty{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -24,7 +25,7 @@
     </nav>
   </header>
   {% if flash %}
-    <p class="flash flash-{{ flash.kind }}" role="status">{{ flash.text }}</p>
+    <p class="flash flash-{{ flash.kind }}" role="status">{% if flash.code %}<strong class="error-code">Error {{ flash.code }}.</strong> {% endif %}{{ flash.text }}</p>
   {% endif %}
   {% if added %}
     <div class="toast" id="added-toast" role="status">

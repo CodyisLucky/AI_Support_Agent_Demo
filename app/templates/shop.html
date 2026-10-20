@@ -18,9 +18,16 @@
       <h3>{{ item.name }}</h3>
       <p>{{ item.summary }}</p>
       <p class="price">{{ item.price_cents | price }}</p>
+      {% if item.stock == 0 %}
+      <p class="stock">Out of stock</p>
+      {% endif %}
       <form method="post" action="/cart/add">
         <input type="hidden" name="item_id" value="{{ item.id }}">
+        {% if item.stock == 0 %}
+        <button type="submit" disabled>Out of stock</button>
+        {% else %}
         <button type="submit">Add to cart</button>
+        {% endif %}
       </form>
     </article>
     {% endfor %}

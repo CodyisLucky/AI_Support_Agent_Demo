@@ -14,6 +14,7 @@ from app.storage import (
 )
 
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_]{3,32}$")
+USERNAME_TAKEN = "That username is already registered."
 MIN_PASSWORD_LENGTH = 8
 HASH_ITERATIONS = 200_000
 
@@ -77,7 +78,7 @@ def validate_new_account(username: str, display_name: str, password: str, confir
     if password != confirm:
         return "Those passwords do not match."
     if find_user(username):
-        return "That username is already registered."
+        return USERNAME_TAKEN
     return None
 
 
