@@ -245,7 +245,7 @@ The color strip is six equal flat segments, 0.42rem tall. It is part of the tool
 
 ### Navigation
 
-Wordmark on the left, Shop, Cart, and Sign in or Account in the middle, one action on the right. The current page is Counter Rose at weight 700. Other links are Plum Ink at weight 500 and turn rose on hover for a fine pointer.
+Wordmark on the left. Shop, Cart, About us, and Contact us sit in the middle, with Account beside them when someone is signed in. One action on the right: Sign in, or Sign out when someone is signed in. The current page is Counter Rose at weight 700. Other links are Plum Ink at weight 500 and turn rose on hover for a fine pointer.
 
 The bar's collapsed width is measured from the row's contents. Do not hard-code it. Transitions stay off until that measurement is applied, so the bar does not animate on first paint. A hash in the URL starts the page in the collapsed state so a deep link does not flash the wide bar. Below 760px there is no width animation.
 

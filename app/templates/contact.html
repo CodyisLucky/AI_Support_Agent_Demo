@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Contact us · Lumen Beauty{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Contact us</h1>
+  <p class="lede">Ask about a product, an order, or an error. Help is the way to reach the counter, and the chat stays on this page.</p>
+</section>
+<section class="panel" aria-labelledby="help-heading">
+  <h2 id="help-heading">Help</h2>
+  <p>Open the chat and send a message. It keeps the conversation for this visit, whether you are signed in or not.</p>
+  <button type="button" class="button" id="open-help">Open Help</button>
+</section>
+<section class="panel" aria-labelledby="account-heading">
+  <h2 id="account-heading">Orders and accounts</h2>
+  <p>Signed-in orders are listed on your account. A guest order stays in the browser that placed it.</p>
+  <p class="aside">No account yet? <a href="/register">Create one</a>.</p>
+</section>
+<script>
+  document.getElementById("open-help").addEventListener("click", function () {
+    var chat = document.getElementById("help");
+    var summary = chat && chat.querySelector(".chat-launcher");
+    if (!chat || !summary) return;
+    if (chat.open && !chat.classList.contains("is-closing")) {
+      var input = document.getElementById("chat-message");
+      if (input) input.focus();
+      return;
+    }
+    summary.click();
+  });
+</script>
+{% endblock %}

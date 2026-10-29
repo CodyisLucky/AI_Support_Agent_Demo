@@ -642,6 +642,16 @@ def register(
     return RedirectResponse("/account", status_code=303)
 
 
+@app.get("/about")
+def about(request: Request):
+    return render(request, "about.html")
+
+
+@app.get("/contact")
+def contact(request: Request):
+    return render(request, "contact.html")
+
+
 @app.get("/account")
 def account(request: Request):
     user = current_user(request)
