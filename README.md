@@ -19,7 +19,7 @@ The support model and how it reads documentation (full prompt vs retrieval) are 
 3. **Product documentation.** Done. Agent-facing docs for all 25 products and services are in [docs/catalog](docs/catalog).
 4. **Error logging.** Done. Three-digit codes fire from real shop flows and are documented in [docs/errors](docs/errors). Each line in `data/errors.jsonl` has the time, user id, and code.
 5. **Chat window.** Done. A Help bubble on every page opens a chat. Replies are a stub until step 6. The visit's transcript is saved in `data/chats.json`.
-6. **Connect the agent.** In progress. The agent core, records, and honest handoff are built; Claude and the local model are connected once their accounts and installs exist.
+6. **Connect the agent.** In progress. The agent core, records, and honest handoff are built. The local Ollama model is connected; Claude is connected once its API account exists. [docs/agent-setups.md](docs/agent-setups.md) compares the setups.
 
 See [docs/roadmap.md](docs/roadmap.md) for what each remaining step delivers, including seeded demo data, error correlation, what the agent may read, local tickets, and saved transcripts.
 
@@ -42,6 +42,17 @@ curl -sS https://bootstrap.pypa.io/get-pip.py | .venv/bin/python
 ```
 
 Open http://127.0.0.1:8000
+
+### Local model (optional)
+
+Ollama runs inside WSL. Install it from https://ollama.com, then build the shop's model, which raises Ollama's default context window:
+
+```bash
+ollama pull qwen2.5:7b
+ollama create lumen-qwen -f ollama/Modelfile
+```
+
+In `agent.env`, set `AGENT_PROVIDER=ollama` and `AGENT_MODEL=lumen-qwen`. The next chat message uses it; no restart is needed.
 
 A seeded shopper is created on first launch: username `demo`, password `demo-shopper`. That account has no orders yet. New accounts are written to `data/users.json`, which is gitignored.
 

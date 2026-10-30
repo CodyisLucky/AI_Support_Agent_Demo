@@ -1,12 +1,14 @@
 """Which provider answers, chosen by AGENT_PROVIDER in agent.env.
 
-Claude is wired up in step 6b and the local Ollama model in 6c. OpenAI and
-Gemini are connected later; until a provider is built, choosing it gives an
-honest "not connected" handoff instead of an error page.
+The local Ollama model answers through the OpenAI-compatible provider (6c).
+Claude gets its own native provider in step 6b. OpenAI and Gemini are
+connected later; until a provider is built, choosing it gives an honest
+"not connected" handoff instead of an error page.
 """
 
 from ..settings import AgentSettings, secret
 from .base import Provider, ProviderUnavailable
+from .openai_compat import OpenAICompatProvider
 
 LABELS = {
     "anthropic": "Claude",
@@ -34,4 +36,7 @@ def get_provider(settings: AgentSettings) -> Provider:
     key = API_KEYS.get(name)
     if key and not secret(key):
         raise ProviderUnavailable("provider_error", f"missing {key}")
+    if name == "ollama":
+        # Ollama ignores the key, but the client requires one.
+        return OpenAICompatProvider(name, LABELS[name], settings.ollama_url.rstrip("/") + "/v1", "ollama")
     raise ProviderUnavailable("not_connected", f"provider not connected: {name}")

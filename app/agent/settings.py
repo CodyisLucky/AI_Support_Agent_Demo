@@ -20,7 +20,7 @@ SECRETS_PATH = ROOT / ".env"
 
 DEFAULT_MODELS = {
     "anthropic": "claude-opus-5-5",
-    "ollama": "",
+    "ollama": "lumen-qwen",
     "openai": "",
     "gemini": "",
 }
