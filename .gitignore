@@ -11,6 +11,8 @@ __pycache__/
 # Secrets
 .env
 .env.*
+!.env.example
+agent.env
 
 # Local demo state: accounts, orders, chat transcripts, logs
 data/

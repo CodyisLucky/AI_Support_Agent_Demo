@@ -32,7 +32,9 @@ from app.backend import (
     orders_unreadable,
 )
 from app.catalog import format_price, get_item, in_stock, sections
-from app.chat import MAX_MESSAGE_LENGTH, clean_message, record_turn, visible_messages
+from app.agent.limits import client_ip, visitor_for
+from app.agent.settings import load_settings
+from app.chat import Limited, chat_view, clean_message, record_turn
 from app.errors import log_error, message, session_is_stale, utc_now
 from app.inputs import (
     MAX_NAME_LENGTH,
@@ -223,10 +225,12 @@ def render(request: Request, name: str, **context):
     user = current_user(request)
     quantities = cart_quantities(request)
     session_id = shop_session_id(request)
-    try:
-        transcript = visible_messages(session_id) if session_id else []
-    except StorageError:
-        transcript = []
+    chat = {"messages": [], "conversation_id": None, "handoff": None}
+    if session_id:
+        try:
+            chat = chat_view(session_id)
+        except StorageError:
+            pass
     return templates.TemplateResponse(
         request,
         name,
@@ -236,7 +240,10 @@ def render(request: Request, name: str, **context):
             "added": pop_added(request),
             "cart_count": sum(quantities.values()),
             "session_id": session_id,
-            "chat_messages": transcript,
+            "chat_messages": chat["messages"],
+            "chat_conversation_id": chat["conversation_id"],
+            "chat_handoff": chat["handoff"],
+            "chat_max_chars": load_settings().max_message_chars,
             "chat_open": pop_chat_open(request),
             **context,
         },
@@ -697,24 +704,54 @@ def post_chat(request: Request, chat_message: str = Form("")):
         if wants_json(request):
             return JSONResponse({"error": f"Error 102. {message('102')}"}, status_code=401)
         return RedirectResponse("/login", status_code=303)
+    settings = load_settings()
     text = clean_message(chat_message)
     if not text:
         return chat_result(request, {"error": "Enter a message."}, 400)
-    if len(text) > MAX_MESSAGE_LENGTH:
-        return chat_result(request, {"error": "Use 2,000 characters or fewer."}, 400)
+    if len(text) > settings.max_message_chars:
+        return chat_result(request, {"error": f"Use {settings.max_message_chars:,} characters or fewer."}, 400)
     session_id = shop_session_id(request)
     user_id = user_id_of(user)
     if not session_id:
         log_error(user_id, "500", detail="missing shop session")
         return chat_result(request, {"error": message("500")}, 500, "500")
+    order_ids = [item for item in request.session.get("order_ids", []) if isinstance(item, str)]
+    ip = client_ip(
+        request.client.host if request.client else None,
+        request.headers.get("x-forwarded-for"),
+        settings.trust_proxy_headers,
+    )
     try:
-        messages = record_turn(session_id, user_id, text)
+        payload = record_turn(
+            session_id,
+            user_id,
+            user["username"] if user else None,
+            order_ids,
+            text,
+            visitor_for(user_id, ip),
+        )
+    except Limited as exc:
+        if exc.first:
+            log_error(user_id, "509", detail=exc.detail, session_id=session_id)
+        return chat_result(request, {"error": exc.message}, 429, "509")
     except ChatFull:
-        return chat_result(request, {"error": "This conversation has reached its limit."}, 400)
+        log_error(user_id, "509", detail="chat message limit", session_id=session_id)
+        return chat_result(
+            request,
+            {
+                "error": (
+                    f"This chat has reached its {settings.max_messages_per_chat}-message limit. "
+                    "Close your browser and come back to start a new chat, "
+                    f"or email our team at {settings.support_email}."
+                )
+            },
+            400,
+            "509",
+        )
     except StorageError as exc:
         log_error(user_id, "500", detail=exc.operation, session_id=session_id)
         return chat_result(request, {"error": message("500")}, 500, "500")
-    return chat_result(request, {"messages": messages})
+    return chat_result(request, payload)
 
 
 @app.post("/logout")

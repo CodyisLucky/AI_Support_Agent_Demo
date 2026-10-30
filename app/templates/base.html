@@ -68,18 +68,26 @@
     <div class="chat-panel" id="chat-panel" role="dialog" aria-labelledby="chat-title">
       <div class="chat-head">
         <h2 class="chat-title" id="chat-title">Help</h2>
+        <p class="chat-ref" id="chat-ref"{% if not chat_conversation_id %} hidden{% endif %}>Conversation <span id="chat-ref-id">{{ chat_conversation_id or "" }}</span></p>
       </div>
       <ol class="chat-log" id="chat-log">
         {% for message in chat_messages %}
-        <li class="chat-{{ message.role }}"><p>{{ message.text }}</p></li>
+        <li class="chat-{{ message.role }}">
+          {% for paragraph in message.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
+          {% if message.details %}<p class="chat-details">{{ message.details }}</p>{% endif %}
+        </li>
         {% else %}
         <li class="chat-empty"><p>Ask about a product, an order, or an error.</p></li>
         {% endfor %}
       </ol>
+      <div class="chat-handoff" id="chat-handoff"{% if not chat_handoff %} hidden{% endif %}>
+        <a class="button" id="chat-handoff-email" href="{{ chat_handoff.mailto if chat_handoff else '' }}">Email our team</a>
+        <a class="button button-quiet" id="chat-handoff-live" href="{{ chat_handoff.live_chat_url if chat_handoff else '' }}" target="_blank" rel="noopener noreferrer"{% if not (chat_handoff and chat_handoff.live_chat_url) %} hidden{% endif %}>Chat with our team</a>
+      </div>
       <form class="chat-form" method="post" action="/chat">
         <div class="chat-compose">
           <label class="clip" for="chat-message">Message</label>
-          <input id="chat-message" name="chat_message" type="text" maxlength="2000" autocomplete="off" enterkeyhint="send" placeholder="Ask a question" required>
+          <input id="chat-message" name="chat_message" type="text" maxlength="{{ chat_max_chars or 1000 }}" autocomplete="off" enterkeyhint="send" placeholder="{{ 'Add a note for our team' if chat_handoff else 'Ask a question' }}" required>
           <button type="submit">Send</button>
         </div>
         <p class="chat-error" id="chat-error" aria-live="polite"></p>

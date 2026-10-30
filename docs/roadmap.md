@@ -36,7 +36,10 @@ Done. Every page has a Help bubble at the bottom right. It opens a chat on that 
 
 The visit's transcript is saved in `data/chats.json`, next to orders. One chat per `session_id`, the same id as `data/errors.jsonl`. Each shopper message stores the account id for that turn, or null when no one is signed in. A demo can replay the file.
 
-## Step 6 — Train and connect the agent
+## Step 6 — Connect the agent
+
+In progress. 6a is done: the agent core, tools, records, honest handoff, error 508, and the chat details line, tested with a scripted provider, plus off-topic and spend safeguards (error 509). 6b connects Claude once an API key exists. 6c installs Ollama in WSL and connects a local model. 6d writes `docs/agent-setups.md` with the pros and cons of each setup and of each way to deliver records. OpenAI and Gemini follow later.
+
 
 Choose the model and whether it sees documentation by full prompt or by retrieval. Connect that choice to the chat window, the product docs, and the error docs.
 

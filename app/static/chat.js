@@ -7,7 +7,13 @@
   var input = document.getElementById("chat-message");
   var error = document.getElementById("chat-error");
   var status = document.getElementById("chat-status");
+  var ref = document.getElementById("chat-ref");
+  var refId = document.getElementById("chat-ref-id");
+  var handoff = document.getElementById("chat-handoff");
+  var handoffEmail = document.getElementById("chat-handoff-email");
+  var handoffLive = document.getElementById("chat-handoff-live");
   if (!chat || !summary || !panel || !log || !form || !input || !error || !status) return;
+  if (!ref || !refId || !handoff || !handoffEmail || !handoffLive) return;
 
   var button = form.querySelector("button");
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -32,10 +38,58 @@
     if (empty) empty.remove();
     var item = document.createElement("li");
     item.className = message.role === "shopper" ? "chat-shopper" : "chat-agent";
-    var paragraph = document.createElement("p");
-    paragraph.textContent = message.text;
-    item.appendChild(paragraph);
+    var paragraphs = Array.isArray(message.paragraphs) && message.paragraphs.length ? message.paragraphs : [message.text];
+    paragraphs.forEach(function (text) {
+      var paragraph = document.createElement("p");
+      paragraph.textContent = text;
+      item.appendChild(paragraph);
+    });
+    if (typeof message.details === "string" && message.details) {
+      var details = document.createElement("p");
+      details.className = "chat-details";
+      details.textContent = message.details;
+      item.appendChild(details);
+    }
     log.appendChild(item);
+  }
+
+  var typing = null;
+
+  function showTyping() {
+    var empty = log.querySelector(".chat-empty");
+    if (empty) empty.remove();
+    typing = document.createElement("li");
+    typing.className = "chat-agent chat-typing";
+    var paragraph = document.createElement("p");
+    paragraph.textContent = "Typing…";
+    typing.appendChild(paragraph);
+    log.appendChild(typing);
+    scrollLog();
+  }
+
+  function hideTyping() {
+    if (typing) typing.remove();
+    typing = null;
+  }
+
+  function showConversation(id) {
+    if (typeof id !== "string" || !id) return;
+    refId.textContent = id;
+    ref.hidden = false;
+  }
+
+  function showHandoff(info) {
+    if (!info || typeof info.mailto !== "string") return;
+    handoffEmail.href = info.mailto;
+    var live = typeof info.live_chat_url === "string" ? info.live_chat_url : "";
+    if (/^https?:\/\//.test(live)) {
+      handoffLive.href = live;
+      handoffLive.hidden = false;
+    } else {
+      handoffLive.hidden = true;
+    }
+    handoff.hidden = false;
+    input.placeholder = "Add a note for our team";
   }
 
   function remember() {
@@ -123,6 +177,7 @@
     syncButton();
     showError("");
     status.textContent = "";
+    showTyping();
 
     fetch("/chat", {
       method: "POST",
@@ -142,11 +197,14 @@
       })
       .then(function (result) {
         var body = result.body || {};
+        hideTyping();
         if (!result.ok || !Array.isArray(body.messages)) {
           showError(typeof body.error === "string" && body.error ? body.error : "That message could not be sent. Try again.");
           return;
         }
         body.messages.forEach(appendMessage);
+        showConversation(body.conversation_id);
+        showHandoff(body.handoff);
         scrollLog();
         input.value = "";
         var reply = body.messages.filter(function (item) {
@@ -159,6 +217,7 @@
         }
       })
       .catch(function () {
+        hideTyping();
         showError("That message could not be sent. Try again.");
       })
       .then(function () {

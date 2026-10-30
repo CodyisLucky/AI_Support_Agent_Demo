@@ -16,7 +16,7 @@ Look up `data/errors.jsonl` lines with that `session_id`. That finds what happen
 
 The shopper sees the same code in a banner, for example `Error 101`. The wording in the banner matches the "What the shopper sees" section.
 
-Codes 101 through 301 mean the shop understood the request and refused it because of what the shopper did. Codes 500 through 507 mean the shop, the account store, or the payment processor failed. For a 500-series code, do not tell the shopper to correct a typo. Say whether anything was charged or saved, using that code's file. Only 505 places the order.
+Codes 101 through 301 mean the shop understood the request and refused it because of what the shopper did. Codes 500 through 509 mean the shop, the account store, the payment processor, or the support assistant failed. For a 500-series code, do not tell the shopper to correct a typo. Say whether anything was charged or saved, using that code's file. Only 505 places the order.
 
 ## How to answer
 

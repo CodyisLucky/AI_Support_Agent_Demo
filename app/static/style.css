@@ -588,6 +588,42 @@ body:has(#help[open]) .toast {
 
 .chat-error:empty { display: none; }
 
+.chat-ref {
+  margin: 0.2rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.chat-log p + p { margin-top: 0.5rem; }
+
+.chat-log .chat-details {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.chat-typing p { color: var(--ink-soft); }
+
+.chat-handoff {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.85rem 1.15rem 0;
+}
+
+.chat-handoff .button-quiet {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chat-handoff .button-quiet:hover { background: #e7dff5; }
+}
+
+.chat-ref[hidden],
+.chat-handoff[hidden],
+.chat-handoff .button[hidden] { display: none; }
+
 .meta {
   display: grid;
   gap: 0.9rem;

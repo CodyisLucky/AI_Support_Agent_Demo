@@ -26,6 +26,8 @@ CODES = {
     "505": "The order was placed, but the card was not saved to the account.",
     "506": "Your account records could not be loaded. Try again in a few minutes.",
     "507": "The payment processor timed out. Nothing was charged. Try the order once more.",
+    "508": "The support assistant is unavailable right now. Nothing was changed. Email our team for help.",
+    "509": "The support assistant reached a usage limit. Nothing was changed. Email our team for help.",
 }
 
 

@@ -17,3 +17,5 @@ Code, what happened, file.
 - 505 — Card could not be saved — [505.md](505.md)
 - 506 — Account records could not be loaded — [506.md](506.md)
 - 507 — Payment processor timed out — [507.md](507.md)
+- 508 — Support assistant unavailable — [508.md](508.md)
+- 509 — Support assistant usage limit — [509.md](509.md)

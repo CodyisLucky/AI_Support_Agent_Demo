@@ -13,6 +13,12 @@ ORDERS_PATH = DATA_DIR / "orders.json"
 CHATS_PATH = DATA_DIR / "chats.json"
 ERRORS_PATH = DATA_DIR / "errors.jsonl"
 SECRET_PATH = DATA_DIR / "session_secret"
+TRANSCRIPTS_DIR = DATA_DIR / "transcripts"
+USAGE_PATH = DATA_DIR / "usage.json"
+
+# Conversation ids are typed by shoppers into an email, so they are short and
+# skip characters that look alike (0/O, 1/I/L).
+CONVERSATION_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 
 _lock = Lock()
 
@@ -162,16 +168,62 @@ def _load_chats() -> list[dict]:
     return [chat for chat in payload.get("chats", []) if isinstance(chat, dict)]
 
 
-def chat_for_session(session_id: str) -> dict | None:
+def all_chats() -> list[dict]:
     try:
         with _lock:
-            chats = _load_chats()
+            return _load_chats()
     except (OSError, json.JSONDecodeError) as exc:
         raise StorageError("read chats") from exc
-    for chat in chats:
+
+
+def chat_for_session(session_id: str) -> dict | None:
+    for chat in all_chats():
         if chat.get("session_id") == session_id:
             return chat
     return None
+
+
+def _new_conversation_id(chats: list[dict]) -> str:
+    taken = {chat.get("conversation_id") for chat in chats}
+    while True:
+        candidate = "LB-" + "".join(secrets.choice(CONVERSATION_ALPHABET) for _ in range(6))
+        if candidate not in taken:
+            return candidate
+
+
+def _new_chat(session_id: str, user_id: str | None, chats: list[dict], now: str) -> dict:
+    return {
+        "id": str(uuid.uuid4()),
+        "conversation_id": _new_conversation_id(chats),
+        "session_id": session_id,
+        "user_id": user_id,
+        "created_at": now,
+        "updated_at": now,
+        "messages": [],
+    }
+
+
+def open_chat(session_id: str, user_id: str | None) -> dict:
+    """Return this visit's chat, creating it (with a conversation id) if needed.
+
+    A chat saved before conversation ids existed is given one here.
+    """
+    now = _utc_now()
+    try:
+        with _lock:
+            chats = _load_chats()
+            chat = next((item for item in chats if item.get("session_id") == session_id), None)
+            if chat is None:
+                chat = _new_chat(session_id, user_id, chats, now)
+                chats.append(chat)
+            elif not chat.get("conversation_id"):
+                chat["conversation_id"] = _new_conversation_id(chats)
+            else:
+                return chat
+            _write_json(CHATS_PATH, {"chats": chats})
+            return chat
+    except (OSError, json.JSONDecodeError) as exc:
+        raise StorageError("write chats") from exc
 
 
 def append_chat_turn(
@@ -180,8 +232,14 @@ def append_chat_turn(
     shopper_text: str,
     agent_text: str,
     limit: int = 100,
+    agent_meta: dict | None = None,
+    handoff: dict | None = None,
 ) -> list[dict]:
     """Save one shopper message and the reply that follows it.
+
+    `agent_meta` (provider, model, timing, lookups) is kept on the reply.
+    `handoff` marks the chat as passed to the business; it is the local
+    support ticket, and the first one saved wins.
 
     Returns those two messages. Raises ChatFull when this session already
     holds `limit` shopper messages, and StorageError when the file cannot
@@ -190,19 +248,14 @@ def append_chat_turn(
     now = _utc_now()
     shopper = {"role": "shopper", "text": shopper_text, "time": now, "user_id": user_id}
     agent = {"role": "agent", "text": agent_text, "time": now}
+    if agent_meta:
+        agent["meta"] = agent_meta
     try:
         with _lock:
             chats = _load_chats()
             chat = next((item for item in chats if item.get("session_id") == session_id), None)
             if chat is None:
-                chat = {
-                    "id": str(uuid.uuid4()),
-                    "session_id": session_id,
-                    "user_id": user_id,
-                    "created_at": now,
-                    "updated_at": now,
-                    "messages": [],
-                }
+                chat = _new_chat(session_id, user_id, chats, now)
                 chats.append(chat)
             messages = [item for item in chat.get("messages", []) if isinstance(item, dict)]
             shopper_count = sum(1 for item in messages if item.get("role") == "shopper")
@@ -212,9 +265,54 @@ def append_chat_turn(
             chat["messages"] = messages
             chat["user_id"] = user_id
             chat["updated_at"] = now
+            if handoff and not chat.get("handoff"):
+                chat["handoff"] = {**handoff, "time": now}
             _write_json(CHATS_PATH, {"chats": chats})
     except ChatFull:
         raise
     except (OSError, json.JSONDecodeError) as exc:
         raise StorageError("write chats") from exc
     return [shopper, agent]
+
+
+def write_text_file(path: Path, text: str) -> None:
+    """Replace a file in one step so a reader never sees half of it."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(text, encoding="utf-8")
+    temporary.replace(path)
+
+
+def _today_usage(day: str) -> dict:
+    payload = _read_json(USAGE_PATH, {})
+    if payload.get("date") != day:
+        return {"date": day, "total_usd": 0.0, "visitors": {}}
+    return payload
+
+
+def usage_for_day(day: str) -> dict:
+    """Today's estimated AI spend: the total and per visitor key.
+
+    Only one day is ever kept. Visitor keys for guests are a hash of the IP
+    address under a key that changes daily, so nothing here links visits
+    across days.
+    """
+    try:
+        with _lock:
+            return _today_usage(day)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise StorageError("read usage") from exc
+
+
+def add_usage(day: str, visitor_key: str, usd: float) -> None:
+    """Add one reply's estimated cost. The first write of a new day drops
+    the previous day's entries."""
+    try:
+        with _lock:
+            usage = _today_usage(day)
+            usage["total_usd"] = round(usage.get("total_usd", 0.0) + usd, 6)
+            visitors = usage.setdefault("visitors", {})
+            visitors[visitor_key] = round(visitors.get(visitor_key, 0.0) + usd, 6)
+            _write_json(USAGE_PATH, usage)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise StorageError("write usage") from exc

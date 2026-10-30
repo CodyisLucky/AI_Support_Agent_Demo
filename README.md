@@ -19,7 +19,7 @@ The support model and how it reads documentation (full prompt vs retrieval) are 
 3. **Product documentation.** Done. Agent-facing docs for all 25 products and services are in [docs/catalog](docs/catalog).
 4. **Error logging.** Done. Three-digit codes fire from real shop flows and are documented in [docs/errors](docs/errors). Each line in `data/errors.jsonl` has the time, user id, and code.
 5. **Chat window.** Done. A Help bubble on every page opens a chat. Replies are a stub until step 6. The visit's transcript is saved in `data/chats.json`.
-6. **Train and connect the agent.** Choose the model and connect it to the docs, logs, and chat window.
+6. **Connect the agent.** In progress. The agent core, records, and honest handoff are built; Claude and the local model are connected once their accounts and installs exist.
 
 See [docs/roadmap.md](docs/roadmap.md) for what each remaining step delivers, including seeded demo data, error correlation, what the agent may read, local tickets, and saved transcripts.
 
@@ -71,3 +71,21 @@ Every typed field is cleaned before it is checked or saved: control characters a
 A Help bubble sits at the bottom right of every page. Opening it shows a chat that stays on the page the shopper is already on. Sending a message appends that message and a stub reply: the support agent is not connected yet. Step 6 replaces the stub.
 
 The conversation for the current browser session is stored in `data/chats.json`. It uses the same `session_id` as the error log, so a later agent can read this visit's transcript beside `data/errors.jsonl`. Each shopper message includes the signed-in account id, or null for a guest. Signing out does not start a new chat. Closing the browser does, because the session cookie ends.
+
+## Step 6 status
+
+The Help chat is answered by a support agent that looks things up with tools: product and error docs, the shopper's own orders, this visit's errors, and live stock. It can only see the shopper who is chatting.
+
+**Which model answers** is set in `agent.env` (copy `agent.env.example`). The shop re-reads it on every message, so switching `AGENT_PROVIDER` or `AGENT_MODEL` needs no restart. API keys go in `.env` (copy `.env.example`), kept apart so `agent.env` can be shown on screen.
+
+| Provider | Status |
+|---|---|
+| `anthropic` (Claude) | Not connected yet. Needs a Claude Console account and `ANTHROPIC_API_KEY`. A Claude Pro subscription does not include API access. |
+| `ollama` (local, in WSL) | Not connected yet. Ollama is not installed. |
+| `openai`, `gemini` | Planned. |
+
+**When the agent stops.** If the provider fails, the key is missing, records can't be read, or the agent can't find an answer in the docs, the chat says so plainly, says nothing was changed, and offers email (and live chat if `LIVE_CHAT_URL` is set) with the conversation ID. The assistant then stays paused for that chat. System failures are logged as error 508.
+
+**Staying on topic and on budget.** The agent only helps with Lumen Beauty shopping, orders, and site problems. An off-topic request gets a short fixed decline from the shop, a warning on the second, and a pause on the third. Rate limits (per chat per minute, per network per hour), a message limit per chat, a token ceiling per reply, and daily spend caps (all visitors, and per visitor) are settings in `agent.env`; hitting one is logged as error 509 and explained to the shopper. A visitor is their account when signed in, otherwise their IP address, stored only as a hash under a key that changes daily, in `data/usage.json`, which keeps today only. Also set a monthly spend limit in the Claude Console once the API account exists: the shop's caps are estimates.
+
+**Records.** Every conversation is written to `data/transcripts/<conversation id>.md`, with `data/transcripts/index.md` listing conversations that need follow-up first. Card numbers typed into the chat are removed before anything is saved or sent to a provider.
