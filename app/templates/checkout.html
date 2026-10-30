@@ -33,29 +33,29 @@
     <div id="guest-fields">
       <label>
         Name
-        <input name="guest_name" autocomplete="name" value="{{ form.guest_name }}">
+        <input name="guest_name" autocomplete="name" maxlength="80" value="{{ form.guest_name }}">
       </label>
       <label>
         Email
-        <input name="guest_email" type="email" autocomplete="email" value="{{ form.guest_email }}">
+        <input name="guest_email" type="email" autocomplete="email" maxlength="254" value="{{ form.guest_email }}">
       </label>
     </div>
     <div id="account-fields">
       <label>
         Username
-        <input name="username" autocomplete="username" value="{{ form.username }}">
+        <input name="username" autocomplete="username" maxlength="32" value="{{ form.username }}">
       </label>
       <label>
         Display name
-        <input name="display_name" autocomplete="name" value="{{ form.display_name }}">
+        <input name="display_name" autocomplete="name" maxlength="60" value="{{ form.display_name }}">
       </label>
       <label>
         Password
-        <input name="password" type="password" autocomplete="new-password">
+        <input name="password" type="password" autocomplete="new-password" maxlength="128">
       </label>
       <label>
         Confirm password
-        <input name="confirm" type="password" autocomplete="new-password">
+        <input name="confirm" type="password" autocomplete="new-password" maxlength="128">
       </label>
     </div>
     {% endif %}
@@ -65,23 +65,23 @@
       <div class="stack">
         <label>
           Recipient
-          <input name="ship_name" autocomplete="shipping name" value="{{ form.ship_name }}">
+          <input name="ship_name" maxlength="80" autocomplete="shipping name" value="{{ form.ship_name }}">
         </label>
         <label>
           Street address
-          <input name="ship_line1" autocomplete="shipping address-line1" value="{{ form.ship_line1 }}">
+          <input name="ship_line1" maxlength="80" autocomplete="shipping address-line1" value="{{ form.ship_line1 }}">
         </label>
         <label>
           City
-          <input name="ship_city" autocomplete="shipping address-level2" value="{{ form.ship_city }}">
+          <input name="ship_city" maxlength="80" autocomplete="shipping address-level2" value="{{ form.ship_city }}">
         </label>
         <label>
           State
-          <input name="ship_region" autocomplete="shipping address-level1" value="{{ form.ship_region }}">
+          <input name="ship_region" maxlength="80" autocomplete="shipping address-level1" value="{{ form.ship_region }}">
         </label>
         <label>
           Postal code
-          <input name="ship_postal" autocomplete="shipping postal-code" value="{{ form.ship_postal }}">
+          <input name="ship_postal" maxlength="80" autocomplete="shipping postal-code" value="{{ form.ship_postal }}">
         </label>
       </div>
     </fieldset>
@@ -100,22 +100,22 @@
         </label>
         {% endif %}
         <div id="new-card" class="stack">
-          <p class="aside">This demo does not charge a real card. Any other number is accepted. These numbers fail on purpose: 4000000000000002 declined (201), 4000000000000119 processor unavailable (501), 4000000000000502 network unavailable (502), 4000000000000507 processor timed out (507), 4000000000000504 order not saved (504), 4000000000000500 unknown error (500). Saving 4000000000000505 to an account places the order and fails to store the card (505).</p>
+          <p class="aside">This demo does not charge a real card. Any 12-19 digit number is accepted. These numbers fail on purpose: 4000000000000002 declined (201), 4000000000000119 processor unavailable (501), 4000000000000502 network unavailable (502), 4000000000000507 processor timed out (507), 4000000000000504 order not saved (504), 4000000000000500 unknown error (500). Saving 4000000000000505 to an account places the order and fails to store the card (505).</p>
           <label>
             Name on card
-            <input name="card_name" autocomplete="cc-name" value="{{ form.card_name }}">
+            <input name="card_name" autocomplete="cc-name" maxlength="80" value="{{ form.card_name }}">
           </label>
           <label>
             Card number
-            <input name="card_number" inputmode="numeric" autocomplete="cc-number" value="{{ form.card_number }}">
+            <input name="card_number" inputmode="numeric" autocomplete="cc-number" maxlength="23">
           </label>
           <label>
             Expiration
-            <input name="card_expiry" autocomplete="cc-exp" placeholder="MM/YY" value="{{ form.card_expiry }}">
+            <input name="card_expiry" autocomplete="cc-exp" placeholder="MM/YY" maxlength="7" value="{{ form.card_expiry }}">
           </label>
           <label>
             Security code
-            <input name="card_cvc" autocomplete="cc-csc">
+            <input name="card_cvc" inputmode="numeric" autocomplete="cc-csc" maxlength="4">
           </label>
           <label class="choice" id="save-card">
             <input type="checkbox" name="save_card_choice" value="yes" {% if form.save_card %}checked{% endif %}>
@@ -129,33 +129,5 @@
   </form>
   <p class="aside"><a href="/cart">Back to cart</a></p>
 </section>
-<script>
-  const guestFields = document.getElementById("guest-fields");
-  const accountFields = document.getElementById("account-fields");
-  const newCard = document.getElementById("new-card");
-  const saveCard = document.getElementById("save-card");
-
-  function syncAccount() {
-    const choice = document.querySelector('input[name="checkout_as"]:checked');
-    const asAccount = choice && choice.value === "account";
-    if (guestFields) guestFields.hidden = asAccount;
-    if (accountFields) accountFields.hidden = !asAccount;
-    if (saveCard) saveCard.hidden = choice ? !asAccount : false;
-  }
-
-  function syncPay() {
-    const choice = document.querySelector('input[name="pay_with"]:checked');
-    const useSaved = choice && choice.value === "saved";
-    if (newCard) newCard.hidden = Boolean(useSaved);
-  }
-
-  document.querySelectorAll('input[name="checkout_as"]').forEach((input) => {
-    input.addEventListener("change", syncAccount);
-  });
-  document.querySelectorAll('input[name="pay_with"]').forEach((input) => {
-    input.addEventListener("change", syncPay);
-  });
-  syncAccount();
-  syncPay();
-</script>
+<script src="/static/checkout.js"></script>
 {% endblock %}

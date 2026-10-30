@@ -9,19 +9,19 @@
   <form method="post" action="/register" class="stack">
     <label>
       Username
-      <input name="username" autocomplete="username" required value="{{ username }}">
+      <input name="username" autocomplete="username" required maxlength="32" value="{{ username }}">
     </label>
     <label>
       Display name
-      <input name="display_name" autocomplete="name" required value="{{ display_name }}">
+      <input name="display_name" autocomplete="name" required maxlength="60" value="{{ display_name }}">
     </label>
     <label>
       Password
-      <input name="password" type="password" autocomplete="new-password" required minlength="8">
+      <input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
     </label>
     <label>
       Confirm password
-      <input name="confirm" type="password" autocomplete="new-password" required minlength="8">
+      <input name="confirm" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
     </label>
     <button type="submit">Create account</button>
   </form>

@@ -17,3 +17,7 @@ data/
 *.db
 *.sqlite
 *.sqlite3
+.playwright-mcp/
+
+#AI related files
+CLAUDE.md

@@ -5,6 +5,7 @@ import secrets
 import uuid
 from datetime import datetime, timezone
 
+from app.inputs import MAX_PASSWORD_LENGTH
 from app.storage import (
     DEMO_DISPLAY_NAME,
     DEMO_PASSWORD,
@@ -73,8 +74,8 @@ def validate_new_account(username: str, display_name: str, password: str, confir
         return "Usernames are 3–32 characters and use letters, numbers, or underscores."
     if not display_name or len(display_name) > 60:
         return "Enter a display name up to 60 characters."
-    if len(password) < MIN_PASSWORD_LENGTH:
-        return f"Passwords need at least {MIN_PASSWORD_LENGTH} characters."
+    if not MIN_PASSWORD_LENGTH <= len(password) <= MAX_PASSWORD_LENGTH:
+        return f"Passwords are {MIN_PASSWORD_LENGTH}–{MAX_PASSWORD_LENGTH} characters."
     if password != confirm:
         return "Those passwords do not match."
     if find_user(username):
@@ -106,6 +107,8 @@ def create_user(username: str, display_name: str, password: str) -> dict:
 
 
 def authenticate(username: str, password: str) -> dict | None:
+    if len(password) > MAX_PASSWORD_LENGTH:
+        return None
     user = find_user(username)
     if not user or not verify_password(password, user["password_hash"]):
         return None

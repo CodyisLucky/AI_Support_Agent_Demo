@@ -1,4 +1,5 @@
 import json
+import os
 import secrets
 import uuid
 from datetime import datetime, timezone
@@ -37,11 +38,14 @@ def ensure_data_dir() -> None:
 def session_secret() -> str:
     ensure_data_dir()
     if SECRET_PATH.exists():
+        SECRET_PATH.chmod(0o600)
         secret = SECRET_PATH.read_text(encoding="utf-8").strip()
         if secret:
             return secret
     secret = secrets.token_urlsafe(32)
-    SECRET_PATH.write_text(secret, encoding="utf-8")
+    descriptor = os.open(SECRET_PATH, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        handle.write(secret)
     return secret
 
 

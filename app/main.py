@@ -34,6 +34,16 @@ from app.backend import (
 from app.catalog import format_price, get_item, in_stock, sections
 from app.chat import MAX_MESSAGE_LENGTH, clean_message, record_turn, visible_messages
 from app.errors import log_error, message, session_is_stale, utc_now
+from app.inputs import (
+    MAX_NAME_LENGTH,
+    clean_text,
+    normalize_expiry,
+    valid_card_number,
+    valid_cvc,
+    valid_email,
+    valid_order_id,
+)
+from app.security import SecurityMiddleware
 from app.shop_session import ShopSessionMiddleware, shop_session_id
 from app.storage import ChatFull, StorageError, append_order, get_order, orders_for_user, session_secret
 
@@ -87,6 +97,7 @@ class BackendErrorMiddleware:
 app.add_middleware(BackendErrorMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=session_secret(), https_only=False)
 app.add_middleware(ShopSessionMiddleware)
+app.add_middleware(SecurityMiddleware)
 app.mount("/static", StaticFiles(directory=str(APP_DIR / "static")), name="static")
 
 ensure_demo_user()
@@ -350,10 +361,6 @@ def checkout_page(request: Request, lines: list[dict], form: dict):
     )
 
 
-def valid_email(email: str) -> bool:
-    return "@" in email and "." in email.split("@")[-1] and " " not in email
-
-
 def reject_checkout(request: Request, lines: list[dict]) -> RedirectResponse | None:
     if getattr(request.state, "session_expired", False):
         return RedirectResponse("/login", status_code=303)
@@ -418,29 +425,31 @@ def checkout(
         return rejected
     form = {
         "checkout_as": "account" if checkout_as == "account" else "guest",
-        "guest_name": guest_name.strip(),
-        "guest_email": guest_email.strip(),
-        "username": username.strip(),
-        "display_name": display_name.strip(),
-        "ship_name": ship_name.strip(),
-        "ship_line1": ship_line1.strip(),
-        "ship_city": ship_city.strip(),
-        "ship_region": ship_region.strip(),
-        "ship_postal": ship_postal.strip(),
+        "guest_name": clean_text(guest_name),
+        "guest_email": clean_text(guest_email),
+        "username": clean_text(username),
+        "display_name": clean_text(display_name),
+        "ship_name": clean_text(ship_name),
+        "ship_line1": clean_text(ship_line1),
+        "ship_city": clean_text(ship_city),
+        "ship_region": clean_text(ship_region),
+        "ship_postal": clean_text(ship_postal),
         "pay_with": "saved" if pay_with == "saved" else "new",
-        "card_name": card_name.strip(),
-        "card_number": card_number.strip(),
-        "card_expiry": card_expiry.strip(),
+        "card_name": clean_text(card_name),
+        "card_number": clean_text(card_number),
+        "card_expiry": clean_text(card_expiry),
         "save_card": save_card_choice == "yes",
     }
     user = current_user(request)
     error = None
     error_code = None
     if not user and form["checkout_as"] == "guest":
-        if not form["guest_name"] or len(form["guest_name"]) > 80:
+        if not form["guest_name"] or len(form["guest_name"]) > MAX_NAME_LENGTH:
             error = "Enter the name for this order."
-        elif not valid_email(form["guest_email"]):
+        elif not form["guest_email"]:
             error = "Enter an email address for the receipt."
+        elif not valid_email(form["guest_email"]):
+            error = "Check the email address. It should look like name@example.com."
     elif not user:
         error = validate_new_account(form["username"], form["display_name"], password, confirm)
         if error == USERNAME_TAKEN:
@@ -454,7 +463,7 @@ def checkout(
             (form["ship_region"], "Enter a state."),
             (form["ship_postal"], "Enter a postal code."),
         ):
-            if not value or len(value) > 80:
+            if not value or len(value) > MAX_NAME_LENGTH:
                 error = shipping_error
                 break
     use_saved = bool(user and user.get("saved_card") and form["pay_with"] == "saved")
@@ -468,14 +477,16 @@ def checkout(
     elif not error:
         if not form["card_number"]:
             error = "Enter a card number."
-        elif not form["card_name"]:
+        elif not valid_card_number(form["card_number"]):
+            error = "Enter a card number of 12 to 19 digits."
+        elif not form["card_name"] or len(form["card_name"]) > MAX_NAME_LENGTH:
             error = "Enter the name on the card."
-        elif not form["card_expiry"]:
-            error = "Enter the card expiration."
-        elif not card_cvc.strip():
-            error = "Enter the card security code."
+        elif not normalize_expiry(form["card_expiry"]):
+            error = "Enter the card expiration as MM/YY."
+        elif not valid_cvc(card_cvc.strip()):
+            error = "Enter the 3 or 4 digit security code."
         else:
-            expiry = form["card_expiry"]
+            expiry = normalize_expiry(form["card_expiry"])
             name_on_card = form["card_name"]
             try:
                 last4 = authorize_card(form["card_number"])
@@ -533,7 +544,8 @@ def checkout(
 
 @app.get("/orders/{order_id}")
 def order_confirmation(request: Request, order_id: str):
-    order = get_order(order_id)
+    well_formed = valid_order_id(order_id)
+    order = get_order(order_id) if well_formed else None
     user = current_user(request)
     if getattr(request.state, "session_expired", False):
         return RedirectResponse("/login", status_code=303)
@@ -542,7 +554,12 @@ def order_confirmation(request: Request, order_id: str):
         or order_id in request.session.get("order_ids", [])
     )
     if not visible:
-        log_error(user_id_of(user), "301", detail=order_id, session_id=shop_session_id(request))
+        log_error(
+            user_id_of(user),
+            "301",
+            detail=order_id if well_formed else "malformed order id",
+            session_id=shop_session_id(request),
+        )
         set_flash(request, "error", message("301"), "301")
         return RedirectResponse("/", status_code=303)
     return render(request, "confirmation.html", order=order)
@@ -557,6 +574,7 @@ def login_form(request: Request):
 
 @app.post("/login")
 def login(request: Request, username: str = Form(""), password: str = Form("")):
+    username = clean_text(username)
     if current_user(request):
         return RedirectResponse("/account", status_code=303)
     if getattr(request.state, "session_expired", False):
@@ -564,12 +582,12 @@ def login(request: Request, username: str = Form(""), password: str = Form("")):
     fault = account_store_fault(username)
     if fault and fault.code == "502":
         record_fault(request, fault.code, None, fault.detail)
-        return render(request, "login.html", username=username.strip())
+        return render(request, "login.html", username=username)
     try:
         user = authenticate(username, password)
     except StorageError as exc:
         record_fault(request, "506", None, exc.operation)
-        return render(request, "login.html", username=username.strip())
+        return render(request, "login.html", username=username)
     if not user:
         known = find_user(username)
         log_error(
@@ -579,7 +597,7 @@ def login(request: Request, username: str = Form(""), password: str = Form("")):
             session_id=shop_session_id(request),
         )
         set_flash(request, "error", message("101"), "101")
-        return render(request, "login.html", username=username.strip())
+        return render(request, "login.html", username=username)
     sign_in(request, user["id"])
     return RedirectResponse("/account", status_code=303)
 
@@ -604,6 +622,8 @@ def register(
     password: str = Form(""),
     confirm: str = Form(""),
 ):
+    username = clean_text(username)
+    display_name = clean_text(display_name)
     current_user(request)
     if getattr(request.state, "session_expired", False):
         return RedirectResponse("/login", status_code=303)
@@ -613,20 +633,20 @@ def register(
         return render(
             request,
             "register.html",
-            username=username.strip(),
-            display_name=display_name.strip(),
+            username=username,
+            display_name=display_name,
         )
     error = validate_new_account(username, display_name, password, confirm)
     if error:
         code = "103" if error == USERNAME_TAKEN else None
         if code:
-            log_error(None, "103", detail=f"username {username.strip()}", session_id=shop_session_id(request))
+            log_error(None, "103", detail=f"username {username}", session_id=shop_session_id(request))
         set_flash(request, "error", error, code)
         return render(
             request,
             "register.html",
-            username=username.strip(),
-            display_name=display_name.strip(),
+            username=username,
+            display_name=display_name,
         )
     try:
         user = create_user(username, display_name, password)
@@ -635,8 +655,8 @@ def register(
         return render(
             request,
             "register.html",
-            username=username.strip(),
-            display_name=display_name.strip(),
+            username=username,
+            display_name=display_name,
         )
     sign_in(request, user["id"])
     return RedirectResponse("/account", status_code=303)

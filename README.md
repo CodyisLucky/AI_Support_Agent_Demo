@@ -47,7 +47,7 @@ A seeded shopper is created on first launch: username `demo`, password `demo-sho
 
 ## Step 2 status
 
-The shop is Lumen Beauty, a local beauty store with 25 items: skincare, makeup, a product consultation, and professional makeup. Each card uses a square labeled “photo” instead of an image. Shoppers add items to a cart, then check out with shipping and a card. Any card number is accepted except the demo numbers listed on checkout. Guests can buy without an account, or create one during checkout and save the card. Orders are written to `data/orders.json`. Signed-in orders and a saved card appear on the account page. Only the last four characters of a card are stored.
+The shop is Lumen Beauty, a local beauty store with 25 items: skincare, makeup, a product consultation, and professional makeup. Each card uses a square labeled “photo” instead of an image. Shoppers add items to a cart, then check out with shipping and a card. Any card number of 12 to 19 digits is accepted, with an expiration as MM/YY and a 3 or 4 digit security code, except the demo numbers listed on checkout. A failed checkout keeps the shipping and name fields but clears the card number. Guests can buy without an account, or create one during checkout and save the card. Orders are written to `data/orders.json`. Signed-in orders and a saved card appear on the account page. Only the last four characters of a card are stored.
 
 ## Step 4 status
 
@@ -61,6 +61,10 @@ Shopper failures write a JSON line to `data/errors.jsonl` with `time`, `session_
 - **500** unknown shop error, including card `4000000000000500`. **501** payment processor unavailable (`4000000000000119`). **502** network unavailable (`4000000000000502`, or username `networkdown`). **503** account was not saved (`storagefail`, or the user file could not be written). **504** order was not saved (`4000000000000504`). **505** order placed, card not saved (`4000000000000505`). **506** account records could not be loaded (`recordsdown`, or a user or order file could not be read). **507** payment processor timed out (`4000000000000507`).
 
 A signed-out attempt stores `user_id` null, except a failed sign-in for a real account, which stores that account's id. The log does not store passwords or full card numbers.
+
+## Input handling
+
+Every typed field is cleaned before it is checked or saved: control characters and invisible formatting (bidi overrides, zero-width and tag characters) are removed, and whitespace is collapsed. Passwords are not altered. Each field has a length limit, request bodies over 64 KB are refused, and form posts from another origin get a 403. Pages send a strict Content-Security-Policy, so every script lives in `app/static`. There is no database, so there are no queries to inject into. If SQLite is added later, use parameterized queries only.
 
 ## Step 5 status
 

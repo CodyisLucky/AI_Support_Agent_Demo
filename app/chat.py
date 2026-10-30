@@ -1,5 +1,6 @@
 """Shopper chat for one browser visit. The reply is a stub until step 6."""
 
+from app.inputs import clean_text
 from app.storage import append_chat_turn, chat_for_session
 
 MAX_MESSAGE_LENGTH = 2000
@@ -8,7 +9,7 @@ STUB_REPLY = "I have your message. The support agent is not connected yet."
 
 
 def clean_message(raw: str) -> str:
-    return " ".join(raw.split())
+    return clean_text(raw)
 
 
 def stub_reply(_text: str) -> str:

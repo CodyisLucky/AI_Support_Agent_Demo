@@ -7,9 +7,7 @@
   <title>{% block title %}Lumen Beauty{% endblock %}</title>
   <link rel="stylesheet" href="/static/fonts/figtree.css">
   <link rel="stylesheet" href="/static/style.css">
-  <script>
-    if (!location.hash) document.documentElement.classList.add("nav-at-top");
-  </script>
+  <script src="/static/nav-top.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -49,20 +47,7 @@
       <a href="/cart">View cart</a>
       <button type="button" class="toast-close" aria-label="Dismiss">Close</button>
     </div>
-    <script>
-      const toast = document.getElementById("added-toast");
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const hide = () => {
-        if (!toast || toast.dataset.leaving) return;
-        if (reduce) { toast.remove(); return; }
-        toast.dataset.leaving = "true";
-        const done = () => toast.remove();
-        toast.addEventListener("transitionend", done, { once: true });
-        setTimeout(done, 240);
-      };
-      toast.querySelector(".toast-close").addEventListener("click", hide);
-      setTimeout(hide, 4500);
-    </script>
+    <script src="/static/toast.js"></script>
   {% endif %}
   <main>
     {% block content %}{% endblock %}
@@ -79,14 +64,7 @@
       <span class="clip chat-label-closed">Help</span>
       <span class="clip chat-label-open">Close</span>
     </summary>
-    <script>
-      (function () {
-        var chat = document.getElementById("help");
-        try {
-          if (sessionStorage.getItem("lumen-chat-open") === "1") chat.open = true;
-        } catch (err) {}
-      })();
-    </script>
+    <script src="/static/chat-restore.js"></script>
     <div class="chat-panel" id="chat-panel" role="dialog" aria-labelledby="chat-title">
       <div class="chat-head">
         <h2 class="chat-title" id="chat-title">Help</h2>
