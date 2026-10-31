@@ -1,0 +1,9 @@
+# Qwen 2.5 7B, the first local model tried. It followed the shop's rules in
+# 6 of 30 test replies; see docs/local-model-tests.md. Rebuild with:
+#   ollama pull qwen2.5:7b
+#   ollama create lumen-qwen -f ollama/lumen-qwen.Modelfile
+# See lumen-gemma.Modelfile for why the context window is raised.
+FROM qwen2.5:7b
+PARAMETER num_ctx 16384
+# Lower than the default so the same question gets the same answer.
+PARAMETER temperature 0.3

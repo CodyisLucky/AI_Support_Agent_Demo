@@ -6,8 +6,8 @@ Claude does not: Anthropic's compatibility endpoint drops prompt caching,
 effort, and refusal details, so Claude gets a native provider. See
 docs/agent-setups.md.
 
-No sampling settings are sent. Ollama's live in ollama/Modelfile, and some
-hosted models reject them.
+No sampling settings are sent. Ollama's live in the files in ollama/, and
+some hosted models reject them.
 """
 
 import json
@@ -24,10 +24,12 @@ from .base import (
     ToolRunner,
 )
 
-# Output cap for one model call. Replies are a few sentences; a model that runs
-# past this is stuck, and a cut-off answer is handed off rather than shown.
-# Ollama honors `max_tokens` but ignores `max_completion_tokens`.
-MAX_OUTPUT_TOKENS = 1024
+# Output cap for one model call, including a model's thinking. Replies are a few
+# sentences, but Gemma 4 used up to 878 tokens on one reply in testing, so this
+# leaves room. A model that runs past it is stuck, and a cut-off answer is handed
+# off rather than shown. Ollama honors `max_tokens` but ignores
+# `max_completion_tokens`.
+MAX_OUTPUT_TOKENS = 2048
 TIMEOUT_SECONDS = 60
 
 

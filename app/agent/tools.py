@@ -242,10 +242,11 @@ class ToolRunner:
         return {"results": search_docs(query)}
 
     def _tool_read_doc(self, args: dict) -> dict:
-        doc_id = str(args.get("doc", "")).strip().removesuffix(".md")
-        doc = DOCS.get(doc_id)
-        if doc is None:
-            raise ValueError(f"Unknown doc id {doc_id!r}. Use an id from the indexes or search_docs.")
+        requested = str(args.get("doc", "")).strip().removesuffix(".md")
+        doc_id = _resolve_doc_id(requested)
+        if doc_id is None:
+            raise ValueError(f"Unknown doc id {requested!r}. Use an id from the indexes or search_docs.")
+        doc = DOCS[doc_id]
         self.used.append(doc_id)
         return {"doc": doc_id, "text": doc["text"]}
 
@@ -314,6 +315,16 @@ class ToolRunner:
         self.used.append("off-topic")
         self.off_topic = clean_text(str(args.get("topic", "")))[:100] or "unspecified"
         return {"ok": True}
+
+
+def _resolve_doc_id(doc_id: str) -> str | None:
+    """The full doc id, also accepting the short form the indexes show:
+    'mascara' for 'catalog/mascara', '201' for 'errors/201'. Models often
+    copy the index form, and each miss counts toward MAX_BAD_CALLS."""
+    if doc_id in DOCS:
+        return doc_id
+    matches = [f"{folder}/{doc_id}" for folder in DOC_FOLDERS if f"{folder}/{doc_id}" in DOCS]
+    return matches[0] if len(matches) == 1 else None
 
 
 def _order_summary(order: dict) -> dict:

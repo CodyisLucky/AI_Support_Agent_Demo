@@ -48,11 +48,11 @@ Open http://127.0.0.1:8000
 Ollama runs inside WSL. Install it from https://ollama.com, then build the shop's model, which raises Ollama's default context window:
 
 ```bash
-ollama pull qwen2.5:7b
-ollama create lumen-qwen -f ollama/Modelfile
+ollama pull gemma4:12b
+ollama create lumen-gemma -f ollama/lumen-gemma.Modelfile
 ```
 
-In `agent.env`, set `AGENT_PROVIDER=ollama` and `AGENT_MODEL=lumen-qwen`. The next chat message uses it; no restart is needed.
+In `agent.env`, set `AGENT_PROVIDER=ollama` and `AGENT_MODEL=lumen-gemma`. The next chat message uses it; no restart is needed. Gemma 4 12B needs a graphics card with about 12 GB. The other files in `ollama/` are the models it was compared with; [docs/local-model-tests.md](docs/local-model-tests.md) has their results.
 
 A seeded shopper is created on first launch: username `demo`, password `demo-shopper`. That account has no orders yet. New accounts are written to `data/users.json`, which is gitignored.
 

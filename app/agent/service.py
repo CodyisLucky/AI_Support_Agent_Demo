@@ -6,6 +6,7 @@ end in a handoff written by the shop and a 508 in the error log. Safeguards
 (too many tokens for one reply, repeated off-topic requests) log 509.
 """
 
+import re
 import time
 from dataclasses import dataclass
 
@@ -97,7 +98,19 @@ def answer(
         )
     if not reply.text.strip():
         return _failure("provider_error", "empty reply", context, text, settings, meta, runner, started)
+    if _looks_like_tool_call(reply.text):
+        return _failure("provider_error", "reply was tool-call text", context, text, settings, meta, runner, started)
     return AgentAnswer(reply.text.strip(), meta)
+
+
+# Weak models sometimes write a tool call as plain text instead of making it.
+# Shoppers should never see that, and the call never ran, so hand off instead.
+_TOOL_NAME = re.compile(r"\b(?:" + "|".join(re.escape(spec["name"]) for spec in TOOL_SPECS) + r")\b")
+_JSON_FRAGMENT = re.compile(r'<tool_call>|\{\s*"[A-Za-z_]+"\s*:')
+
+
+def _looks_like_tool_call(text: str) -> bool:
+    return bool(_TOOL_NAME.search(text) or _JSON_FRAGMENT.search(text))
 
 
 def _failure(

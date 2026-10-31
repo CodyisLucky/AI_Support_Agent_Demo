@@ -10,16 +10,16 @@ The shop's side of the agent is the same in every setup: the instructions, the l
 |---|---|---|---|
 | Cost per message | Nothing. The business pays for the computer and its electricity. | Per word processed. See prices below. | Per word processed. |
 | Where shopper messages go | Nowhere. They stay on the shop's computer. | To Anthropic's servers. | To OpenAI's or Google's servers. |
-| Answer quality | Weakest. Breaks shop rules in the demo (below). | Expected to be the strongest. To be measured once the API account exists. | Not tested yet. |
-| Speed in the demo | About 1 second a reply on an RTX 3080 Ti. | Not measured yet. | Not tested yet. |
-| What the business needs | A PC with a recent NVIDIA graphics card (8 GB or more), left on. | An Anthropic API account and a card on file. | An account with that company. |
+| Answer quality | Depends heavily on the model. The best one tested (Gemma 4 12B) followed the shop's rules in 29 of 30 test replies; the first one tried (Qwen 2.5 7B) in 6 of 30. | Expected to be the strongest. To be measured once the API account exists. | Not tested yet. |
+| Speed in the demo | About 3 seconds a reply for Gemma 4 12B on an RTX 3080 Ti; 1 to 20 seconds across the models tested. | Not measured yet. | Not tested yet. |
+| What the business needs | A PC with a recent NVIDIA graphics card (12 GB for Gemma 4 12B), left on. | An Anthropic API account and a card on file. | An account with that company. |
 | If something breaks | The shop's computer is off or the model is not running. | Anthropic's service is down or the account is out of credit. | The same, at that company. |
 
 In every setup, a failure gives the shopper a plain handoff message with the team's email and a conversation ID, and logs error 508. The shopper never sees an error page.
 
 ## Local model (Ollama)
 
-The model runs on the business's own computer. The demo uses Qwen 2.5 with 7 billion parameters, set up as `lumen-qwen` from [ollama/Modelfile](../ollama/Modelfile).
+The model runs on the business's own computer. The demo started with Qwen 2.5 7B and then compared five more models. It now uses Gemma 4 12B (`lumen-gemma`), the best of the six. The full test record is in [local-model-tests.md](local-model-tests.md).
 
 **Pros**
 
@@ -30,7 +30,7 @@ The model runs on the business's own computer. The demo uses Qwen 2.5 with 7 bil
 
 **Cons**
 
-- Small models follow instructions much less reliably. In the demo they invent answers the shop's rules forbid. That is the opposite of the "hand off rather than guess" promise.
+- Free models vary a lot in how well they follow instructions. The weaker ones invent answers the shop's rules forbid, which is the opposite of the "hand off rather than guess" promise. The model has to be chosen and tested, not just installed.
 - The computer must stay on and be looked after. If it sleeps, the chat hands every shopper off.
 - One graphics card serves a handful of chats at a time, not a busy shop.
 - Bigger, more reliable models need a more expensive graphics card.
@@ -47,7 +47,45 @@ The model runs on the business's own computer. The demo uses Qwen 2.5 with 7 bil
 | I want a refund | Hand off to staff | Pointed to a "support form" that does not exist, and did not hand off |
 | Do you ship to Canada? | Hand off: shipping is not in the docs | Stated "we do not ship to Canada" as fact |
 
-The connection worked every time: lookups ran, safeguards counted tokens, and stopping the model gave the honest handoff. The model was the problem, not the plumbing. Larger local models are the next thing to try.
+**Repeat test (5 runs each, same six questions, 2026-10-30).** The same questions were run five times as written, and five times with a short rules recap added to the end of the instructions. The recap made no real difference, so the model's ability is the limit, not where the rules sit.
+
+| Shopper asked | Followed the rules (as written) | Followed the rules (with recap) |
+|---|---|---|
+| What did I order last time? | 5 of 5 | 5 of 5 |
+| Gel vs. cream cleanser | 0 of 5 (never opened a product file) | 0 of 5 |
+| Is the highlighter in stock? | 0 of 5 (always invented a restock or notify-me promise) | 0 of 5 |
+| Write me a Python function | 0 of 5 (usually wrote the code) | 1 of 5 |
+| I want a refund | 0 of 5 (never handed off) | 0 of 5 |
+| Do you ship to Canada? | 0 of 5 (stated "we don't ship to Canada" as fact) | 0 of 5 |
+
+Three failures are worse than a missing handoff, and make good examples for clients:
+
+- **A fake handoff.** The model said "I've handed off your request for a refund to our support team." Nothing was handed off or recorded, and the shopper never got the real contact details or a conversation ID.
+- **An invented contact.** It told a shopper to write to support@lumenbeauty.com. The shop's real address is different, so a real refund request would have gone to the wrong place.
+- **A broken tool call shown to the shopper.** Twice the reply was literally `off_topic shipping`, text where the model meant to trigger a lookup. Ollama did not recognize it as a call, so it appeared in the chat.
+
+**Safeguard added.** If a reply contains the name of a tool or a fragment of tool-call data, the shop discards it and gives the shopper the plain handoff message instead, and logs error 508. This applies to every model, not only the local one. It catches the broken-reply case only. It does not catch a fake handoff or an invented fact, which look like normal sentences. Only a more capable model, or a check that every answer is backed by a lookup, can address those.
+
+The connection worked every time: lookups ran, safeguards counted tokens, and stopping the model gave the honest handoff. The model was the problem, not the plumbing.
+
+**Comparing six local models (5 runs each of the same six questions, 2026-10-30).** Each model had the same instructions and the same 16,384-token memory, with its publisher's other settings. Every reply was read, not only scored automatically. The per-question results, example replies, and how to rebuild each model are in [local-model-tests.md](local-model-tests.md).
+
+| Model | Download | Followed the rules (of 30) | Typical reply | What went wrong |
+|---|---|---|---|---|
+| Gemma 4 12B (Google) | 8 GB | **29** | 3 s | Once offered to hand off a refund instead of doing it. No invented facts. |
+| Qwen3 8B (Alibaba) | 5 GB | 25 | 6 s | Promised a restock notice for the highlighter in 2 of 5 replies. Once handed off a simple stock question. |
+| gpt-oss 20B (OpenAI) | 13 GB | 23 | 5 s | Invented a notification, a reminder, or a restock date in 4 of 5 stock replies. Twice wrote its handoff as raw data, which the safeguard caught. |
+| Llama 3.1 8B (Meta) | 5 GB | 23 | 1 s | Rarely opened product files, yet once said "according to the product files". Once imitated the shop's "technical problem" message. Twice leaked tool data, caught. |
+| Mistral Small 3.2 24B | 15 GB | 18 | 20 s | Told a refund shopper "you should have received your package by now". Sent another to "the company's customer service". Too big for the graphics card, so slow. |
+| Qwen 2.5 7B (Alibaba) | 5 GB | 6 | 1 s | See above. |
+
+Three of the four best models think before they answer. That costs a few seconds a reply and is worth it here, because the failures that matter are invented facts, not slow replies.
+
+The stock question was the hardest. Most models want to offer something after "out of stock", like a notice, a reminder, or a restock date, and the shop has none of these. It's a good live example for clients of a model being helpful in a way the business never agreed to.
+
+The safeguard caught every broken reply in this run. Without it, shoppers would have seen raw data such as `{"name": "hand_off", "parameters": …}`.
+
+**Limits of this test.** These are six questions run five times each, not a full evaluation. Gemma 4's 29 of 30 is a strong result, but it should be checked on more questions, including multi-turn chats, before it's promised to a client. Each model also has its own license terms, and these should be checked before commercial use.
 
 ## Claude (Anthropic)
 

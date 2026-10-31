@@ -1,0 +1,13 @@
+# The default local support model: Gemma 4 12B. Build it once in WSL:
+#   ollama pull gemma4:12b
+#   ollama create lumen-gemma -f ollama/lumen-gemma.Modelfile
+# It followed the shop's rules best of the six models tried; see
+# docs/local-model-tests.md. The other files here are the models it was
+# compared with, kept so they can be rebuilt.
+#
+# Ollama's default 4096-token window is smaller than the system prompt, tools,
+# a doc or two, and the chat history together, and Ollama silently drops the
+# overflow. The OpenAI-compatible endpoint cannot change the window per request,
+# so it is set here. Sampling stays at the publisher's defaults.
+FROM gemma4:12b
+PARAMETER num_ctx 16384

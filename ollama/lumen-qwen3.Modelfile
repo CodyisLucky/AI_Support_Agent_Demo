@@ -1,0 +1,9 @@
+# Candidate local model, compared with the default lumen-gemma. It followed the
+# shop's rules in 25 of 30 test replies; see docs/local-model-tests.md.
+# Rebuild with:
+#   ollama pull qwen3:8b
+#   ollama create lumen-qwen3 -f ollama/lumen-qwen3.Modelfile
+# See lumen-gemma.Modelfile for why the context window is raised.
+# Sampling stays at the publisher's defaults.
+FROM qwen3:8b
+PARAMETER num_ctx 16384

@@ -38,7 +38,7 @@ The visit's transcript is saved in `data/chats.json`, next to orders. One chat p
 
 ## Step 6 — Connect the agent
 
-In progress. 6a is done: the agent core, tools, records, honest handoff, error 508, and the chat details line, tested with a scripted provider, plus off-topic and spend safeguards (error 509). 6b connects Claude through its native API once an API key exists. 6c is connected: Ollama in WSL answers through an OpenAI-compatible provider that OpenAI and Gemini can reuse later, with the `lumen-qwen` model from [ollama/Modelfile](../ollama/Modelfile). Qwen 2.5 7B broke the shop's rules in the first live checks, so the local model choice is still open. 6d writes [agent-setups.md](agent-setups.md) with the pros and cons of each setup and of each way to deliver records; the setup half is written.
+In progress. 6a is done: the agent core, tools, records, honest handoff, error 508, and the chat details line, tested with a scripted provider, plus off-topic and spend safeguards (error 509). 6b connects Claude through its native API once an API key exists. 6c is connected: Ollama in WSL answers through an OpenAI-compatible provider that OpenAI and Gemini can reuse later, with the `lumen-gemma` model (Gemma 4 12B) from [ollama/lumen-gemma.Modelfile](../ollama/lumen-gemma.Modelfile). It was chosen from six local models; [local-model-tests.md](local-model-tests.md) has the results. 6d writes [agent-setups.md](agent-setups.md) with the pros and cons of each setup and of each way to deliver records; the setup half is written.
 
 
 Choose the model and whether it sees documentation by full prompt or by retrieval. Connect that choice to the chat window, the product docs, and the error docs.

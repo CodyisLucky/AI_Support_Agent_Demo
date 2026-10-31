@@ -1,0 +1,9 @@
+# Candidate local model, compared with the default lumen-gemma. It followed the
+# shop's rules in 18 of 30 test replies; see docs/local-model-tests.md.
+# Rebuild with:
+#   ollama pull mistral-small3.2
+#   ollama create lumen-mistral -f ollama/lumen-mistral.Modelfile
+# See lumen-gemma.Modelfile for why the context window is raised.
+# Sampling stays at the publisher's defaults.
+FROM mistral-small3.2
+PARAMETER num_ctx 16384
